@@ -10,7 +10,32 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"path/filepath"
 	"time"
+)
+
+var (
+	parmCols            string
+	parmRows            string
+	parmSheet           string
+	parmInFile          string
+	parmOutFile         string
+	parmColSep          string
+	parmRowSep          string
+	parmDateFormat      string
+	parmExcelDateFormat string
+	parmUseTitles       bool
+	parmSilent          bool
+	parmHelp            bool
+	parmAbortOnError    bool
+	parmShowVersion		bool
+	rowRangeParsed      map[int]string
+	colRangeParsed      map[int]string
+	workBook            *xlsx.File
+	workSheet           *xlsx.Sheet
+	rightAligned        *xlsx.Style
+	buildTimestamp		string
+	versionInfo			string
 )
 
 // parseCommaGroup parses a single comma group (x or x-y),
@@ -68,47 +93,39 @@ func parseRangeString(rangeStr string) map[int]string {
 	return result
 }
 
-// the main entry function
-func main() {
-	var (
-		parmCols       string
-		parmRows       string
-		parmSheet      string
-		parmInFile     string
-		parmOutFile    string
-		parmColSep     string
-		parmRowSep     string
-		parmDateFormat string
-		parmUseTitles  bool
-		parmSilent     bool
-		parmHelp       bool
-		err            error
-		rowRangeParsed map[int]string
-		colRangeParsed map[int]string
-		workBook       *xlsx.File
-		workSheet      *xlsx.Sheet
-	)
-
+// ParseCommandLine defines and parses command line flags and checks for usage info flags.
+// The function exits the program, if the input file does not exist
+func parseCommandLine() {
 	flag.StringVar(&parmInFile, "infile", "", "full pathname of input file (CSV file)")
 	flag.StringVar(&parmOutFile, "outfile", "", "full pathname of output file (.xlsx file)")
-	flag.StringVar(&parmDateFormat, "dateformat", "2006-01-02", "format for date cells (default YYYY-MM-DD)")
+	flag.StringVar(&parmDateFormat, "dateformat", "2006-01-02", "format for CSV date cells (default YYYY-MM-DD)")
+	flag.StringVar(&parmExcelDateFormat, "exceldateformat", "", "Excel format for date cells (default as in Excel)")
 	flag.StringVar(&parmCols, "columns", "", "column range to use (see below)")
 	flag.StringVar(&parmRows, "rows", "", "list of line numbers to use (1,2,8 or 1,3-14,28)")
 	flag.StringVar(&parmSheet, "sheet", "fromCSV", "tab name of the Excel sheet")
 	flag.StringVar(&parmColSep, "colsep", "|", "column separator (default '|') ")
 	flag.StringVar(&parmRowSep, "rowsep", "\n", "row separator (default LF) ")
 	flag.BoolVar(&parmUseTitles, "usetitles", true, "use first row as titles (will force string type)")
+	flag.BoolVar(&parmAbortOnError, "abortonerror", false, "abort program on first invalid cell data type")
 	flag.BoolVar(&parmSilent, "silent", false, "do not display progress messages")
 	flag.BoolVar(&parmHelp, "help", false, "display usage information")
 	flag.BoolVar(&parmHelp, "h", false, "display usage information")
 	flag.BoolVar(&parmHelp, "?", false, "display usage information")
+	flag.BoolVar(&parmShowVersion, "version", false, "display version information")
 	flag.Parse()
 
+	if parmShowVersion {
+		fmt.Println("Version ", versionInfo, ", Build timestamp ", buildTimestamp)
+		os.Exit(0)
+	}
+
 	if parmHelp {
+		fmt.Printf("You are running verion %s of %s\n\n", versionInfo, filepath.Base(os.Args[0]))
 		flag.Usage()
 		fmt.Println(`
         Column ranges are a comma-separated list of numbers (e.g. 1,4,8,16), intervals (e.g. 0-4,18-32) or a combination.
-        Each comma group can take a type specifiers for the column, one of "text", "number", "date" or "standard",
+        Each comma group can take a type specifiers for the column,
+        one of "text", "number", "integer", "currency", date" or "standard",
         separated from numbers with a colon (e.g. 0:text,3-16:number,17:date)
 		`)
 		os.Exit(1)
@@ -117,76 +134,144 @@ func main() {
 		fmt.Println("Input file does not exist, exiting.")
 		os.Exit(1)
 	}
+}
 
-	// first read csv file to allow using actual row and col counts as option defaults
-	f, err := os.Open(parmInFile)
+// loadInputFile reads the complete input file into a matrix of strings.
+// currently there is not need for gigabyte files, but maybe this should be done streaming.
+// in addition, we need row and column counts first to set the default ranges later on in the program flow.
+func loadInputFile(filename string) (rows [][]string) {
+	f, err := os.Open(filename)
+	defer f.Close()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	// use csv reader to read entire file
 	r := csv.NewReader(bufio.NewReader(f))
 	r.Comma = []rune(parmColSep)[0]
 	r.LazyQuotes = true
-
-	rows, err := r.ReadAll()
+	rows, err = r.ReadAll()
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		os.Exit(2)
 	}
+	// if we get here, we have file data, so no need for an error value.
+	return rows
+}
 
+// setRangeInformation uses the input file's row and column count to set the default ranges
+// for lines and columns. of course we could leave this out by improving the parser function
+// at parseRangeString to allow something like line 34- (instead of 34-999). It's on the list ...
+func setRangeInformation(rowCount, colCount int) {
+	// now we can set the default ranges for lines and columns
 	if parmRows == "" {
-		parmRows = fmt.Sprintf("0-%d", len(rows))
+		parmRows = fmt.Sprintf("0-%d", rowCount)
 	}
 	if parmCols == "" {
-		colCount := len(rows[0])
 		parmCols = fmt.Sprintf("0-%d", colCount)
 	}
-
 	// will bail out on parse error, see declaration
 	rowRangeParsed = parseRangeString(parmRows)
 	colRangeParsed = parseRangeString(parmCols)
+}
 
-	workBook = xlsx.NewFile()
-	workSheet, _ = workBook.AddSheet(parmSheet)
-
-	for rownum := 0; rownum < len(rows); rownum++ {
-		_, ok := rowRangeParsed[rownum]
-		if ok {
-			line := rows[rownum]
-			excelRow := workSheet.AddRow()
-			if !parmSilent {
-				fmt.Println(fmt.Sprintf("Processing line %d (%d cols)", rownum, len(line)))
+// writeCellContents is basically a boring comparison which data type should be written
+// to the spreadsheet cell. if the function encounters invalid values for the data type,
+// it outputs an error message and ignores the value
+func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnum int) bool {
+	success := true
+	switch colType {
+	case "text":
+		cell.SetString(colString)
+	case "number":
+	case "currency":
+		floatVal, err := strconv.ParseFloat(colString, 64)
+		if err != nil {
+			fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid number, value: %s", rownum, colnum, colString))
+			success = false
+		} else {
+			cell.SetStyle(rightAligned)
+			if colType == "currency" {
+				cell.SetFloatWithFormat(floatVal, "#,##0.00;[red](#,##0.00)")
+			} else {
+				cell.SetFloat(floatVal)
 			}
-			for colnum := 0; colnum < len(line); colnum++ {
-				colType, ok := colRangeParsed[colnum]
-				if ok {
-					cell := excelRow.AddCell()
-					if rownum == 0 && parmUseTitles {
-						cell.SetString(line[colnum])
-					} else {
-						switch colType {
-						case "text":
-							cell.SetString(line[colnum])
-						case "number":
-							floatVal, err := strconv.ParseFloat(line[colnum], 64)
-							if err != nil {
-								fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid number, value: %s", rownum, colnum, line[colnum]))
-							} else {
-								cell.SetFloat(floatVal)
-							}
-						case "date":
-							dt, err := time.Parse(parmDateFormat, line[colnum])
-							if err != nil {
-								fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid date, value: %s", rownum, colnum, line[colnum]))
-							} else {
-								cell.SetDateTime(dt)
-							}
-						default:
-							cell.SetValue(line[colnum])
-						}
-					}
+		}
+	case "integer":
+		intVal, err := strconv.ParseInt(colString, 10, 64)
+		if err != nil {
+			fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid integer, value: %s", rownum, colnum, colString))
+			success = false
+		} else {
+			cell.SetStyle(rightAligned)
+			cell.SetInt64(intVal)
+			cell.NumFmt = "#0"
+		}
+	case "date":
+		dt, err := time.Parse(parmDateFormat, colString)
+		if err != nil {
+			fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid date, value: %s", rownum, colnum, colString))
+			success = false
+		} else {
+			cell.SetDateTime(dt)
+			if parmExcelDateFormat != "" {
+				cell.NumFmt = parmExcelDateFormat
+			}
+		}
+	default:
+		cell.SetValue(colString)
+	}
+	return success
+}
+
+// processDataColumns processes a row from the csv input file and writes a cell for each column
+// that should be processed (is in column range, which means it is a key in the colRangeParsed map.
+// if the abortOnError option is set, the function exits the program on the first data type error.
+func processDataColumns(excelRow *xlsx.Row, rownum int, csvLine []string) {
+	if !parmSilent {
+		fmt.Println(fmt.Sprintf("Processing csvLine %d (%d cols)", rownum, len(csvLine)))
+	}
+	for colnum := 0; colnum < len(csvLine); colnum++ {
+		colType, processColumn := colRangeParsed[colnum]
+		if processColumn {
+			cell := excelRow.AddCell()
+			if rownum == 0 && parmUseTitles {
+				// special case for the title row
+				cell.SetString(csvLine[colnum])
+				if colType == "number" || colType == "currency" {
+					cell.SetStyle(rightAligned)
+				}
+			} else {
+				// if the user wanted drama (--abortonerror), exit on first error
+				ok := writeCellContents(cell, csvLine[colnum], colType, rownum, colnum)
+				if !ok && parmAbortOnError {
+					os.Exit(3)
 				}
 			}
+		}
+	}
+}
+
+// the main entry function
+func main() {
+	// preflight stuff
+	parseCommandLine()
+	rows := loadInputFile(parmInFile)
+	setRangeInformation(len(rows), len(rows[0]))
+
+	// excel stuff, create file, add worksheet, define a right-aligned style
+	workBook = xlsx.NewFile()
+	workSheet, _ = workBook.AddSheet(parmSheet)
+	rightAligned = &xlsx.Style{}
+	rightAligned.Alignment = xlsx.Alignment{Horizontal: "right"}
+
+	// loop thru line and column ranges and process data cells
+	for rownum := 0; rownum < len(rows); rownum++ {
+		_, processLine := rowRangeParsed[rownum]
+		if processLine {
+			line := rows[rownum]
+			excelRow := workSheet.AddRow()
+			processDataColumns(excelRow, rownum, line)
 		}
 	}
 	workBook.Save(parmOutFile)

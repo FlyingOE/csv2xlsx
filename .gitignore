@@ -2,3 +2,6 @@
 *.xlsx
 .idea/**
 .idea
+crosscompile.sh
+makefile
+csv2xlsx

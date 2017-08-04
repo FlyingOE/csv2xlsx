@@ -12,11 +12,11 @@ license below), you may download the binary.
 
 Here are the SHA-256 checksums for the binaries:
 
-    724ffe87ca8b81173faf3219015fb3e529ef357399b5827bafe564b8c8d87970  csv2xlsx_386.exe
-    7068b39ac35b2a419fbde39871253170c4666a2617154027247e43d32faff6a5  csv2xlsx_amd64.exe
-    49b1ed81c1d3dc15ef24618a97892bda91216103466db3cfb8b8811c7cf5ed33  csv2xlsx_linux_386
-    d4a01f8ae47c7c6315e828df06070e93202b4448e98bf957799d3be389be7209  csv2xlsx_linux_amd64
-    dcbdb99e29552afcd26755a0bbd993180e8e1ad5ce21bd6f8f351cebed9bf6c5  csv2xlsx_osx
+	07edbff0609058b31bbbfdce532f0b83919da029555970c12af5fa52b0c2f9d1  csv2xlsx_386.exe
+	818041bde85552ea4930152987c478f581614e7768e272af28b2bdd1b4940ed7  csv2xlsx_amd64.exe
+	a1c4b4a84e467f878c9ae413e732f697d75fa8ced49c5adea22f9fab251ff3c9  csv2xlsx_linux_386
+	955a8d4de854ab0c5fd7c7e676c61f61c3f59712a8da101a1db1c71ebc622bb0  csv2xlsx_linux_amd64
+	61ed47ca548ec7773080ff4a059dc2e8a04f345c45b8c0456ef7013dbf9d0047  csv2xlsx_osx
 
 
 ### Usage
@@ -28,12 +28,16 @@ Please see below for a list of command line options.
 
 ```
   -?	display usage information
+  -abortonerror
+    	abort program on first invalid cell data type
   -colsep string
     	column separator (default '|')  (default "|")
   -columns string
     	column range to use (see below)
   -dateformat string
-    	format for date cells (default YYYY-MM-DD) (default "2006-01-02")
+    	format for CSV date cells (default YYYY-MM-DD) (default "2006-01-02")
+  -exceldateformat string
+    	Excel format for date cells (default as in Excel)
   -h	display usage information
   -help
     	display usage information
@@ -53,7 +57,8 @@ Please see below for a list of command line options.
     	use first row as titles (will force string type) (default true)
 
         Column ranges are a comma-separated list of numbers (e.g. 1,4,8,16), intervals (e.g. 0-4,18-32) or a combination.
-        Each comma group can take a type specifiers for the column, one of "text", "number", "date" or "standard",
+        Each comma group can take a type specifiers for the column,
+        one of "text", "number", "integer", "currency", date" or "standard",
         separated from numbers with a colon (e.g. 0:text,3-16:number,17:date)
 ```
 
@@ -66,6 +71,18 @@ the code or want to contribute, please do not hesitate to do so. I'd really like
 As my spare time for coding is limited to some hours around midnight a week, so please have some patience with my answers.
 I am still amazed what you can accomplish within less than 200 lines of code in terms of making my admin part of life easier. :-)
 
+### Changelog
+
+    2017-08-03  0.0.1
+                Initial commit. First, ugly version
+
+    2017-08-04  0.1.2
+                Refactored code to improve readability, added options
+                --abortonerror
+                --exceldateformat
+                --silent
+                Added datatypes integer, currency
+                Prints version info on Usage or with --version
 
 ### License
 
