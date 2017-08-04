@@ -57,6 +57,16 @@ Please see below for a list of command line options.
         separated from numbers with a colon (e.g. 0:text,3-16:number,17:date)
 ```
 
+### Source
+
+This tool fulfills a special requirement and I will extend its functionality, if need arises. As I found out there are lots 
+of people looking for such a tool, I decided to make it publicly available. I am in the process of learning Go and therefore
+I am sure there are much better, more Go-idiomatic ways to achieve this functionality. If you have feedback on how to improve
+the code or want to contribute, please do not hesitate to do so. I'd really like to improve my GO skills and learn things.
+As my spare time for coding is limited to some hours around midnight a week, so please have some patience with my answers.
+I am still amazed what you can accomplish within less than 200 lines of code in terms of making my admin part of life easier. :-)
+
+
 ### License
 
 This code is licensed under the 2-Clause BSD License:
