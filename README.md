@@ -26,6 +26,7 @@ Please see below for a list of command line options.
 
 ### Command line options
 
+```
   -?	display usage information
   -colsep string
     	column separator (default '|')  (default "|")
@@ -54,7 +55,7 @@ Please see below for a list of command line options.
         Column ranges are a comma-separated list of numbers (e.g. 1,4,8,16), intervals (e.g. 0-4,18-32) or a combination.
         Each comma group can take a type specifiers for the column, one of "text", "number", "date" or "standard",
         separated from numbers with a colon (e.g. 0:text,3-16:number,17:date)
-
+```
 
 ### License
 
