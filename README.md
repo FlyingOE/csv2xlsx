@@ -1,10 +1,9 @@
-
 ## CSV2XLSX
 
 Finally: a simple, single file executable, no runtime libs command line tool to convert
 a CSV file to XLSX. And you may even select line and column ranges. :-)
 
-This programm has been crated due to an internal requirement for a Bash shell script. After searching
+This programm has been created due to an internal requirement for a Bash shell script. After searching
 the web I found out that even in 2017 there is no simple, binary executable that does not need any
 runtime, virtual machine or whatever. All you need is a compiler for the Go programming language.
 If you do not want to compile the source and you decide to trust me (no warranty whatsoever, see the
