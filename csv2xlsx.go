@@ -8,10 +8,11 @@ import (
 	"fmt"
 	"github.com/tealeg/xlsx"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
-	"path/filepath"
 	"time"
+	"unicode/utf8"
 )
 
 var (
@@ -20,22 +21,23 @@ var (
 	parmSheet           string
 	parmInFile          string
 	parmOutFile         string
-	parmColSep          string
-	parmRowSep          string
+	parmColSep          rune
 	parmDateFormat      string
 	parmExcelDateFormat string
-	parmUseTitles       bool
+	parmNoHeader        bool
 	parmSilent          bool
 	parmHelp            bool
 	parmAbortOnError    bool
-	parmShowVersion		bool
+	parmShowVersion     bool
+	parmAutoFormula     bool
 	rowRangeParsed      map[int]string
 	colRangeParsed      map[int]string
 	workBook            *xlsx.File
 	workSheet           *xlsx.Sheet
 	rightAligned        *xlsx.Style
-	buildTimestamp		string
-	versionInfo			string
+	buildTimestamp      string
+	versionInfo         string
+	tmpStr              string
 )
 
 // parseCommaGroup parses a single comma group (x or x-y),
@@ -103,16 +105,25 @@ func parseCommandLine() {
 	flag.StringVar(&parmCols, "columns", "", "column range to use (see below)")
 	flag.StringVar(&parmRows, "rows", "", "list of line numbers to use (1,2,8 or 1,3-14,28)")
 	flag.StringVar(&parmSheet, "sheet", "fromCSV", "tab name of the Excel sheet")
-	flag.StringVar(&parmColSep, "colsep", "|", "column separator (default '|') ")
-	flag.StringVar(&parmRowSep, "rowsep", "\n", "row separator (default LF) ")
-	flag.BoolVar(&parmUseTitles, "usetitles", true, "use first row as titles (will force string type)")
+	flag.StringVar(&tmpStr, "colsep", "|", "column separator (default '|') ")
+	// not settable with csv reader
+	//flag.StringVar(&parmRowSep, "rowsep", "\n", "row separator (default LF) ")
+	flag.BoolVar(&parmNoHeader, "noheader", false, "no headers in first line, only data lines (default false)")
 	flag.BoolVar(&parmAbortOnError, "abortonerror", false, "abort program on first invalid cell data type")
 	flag.BoolVar(&parmSilent, "silent", false, "do not display progress messages")
+	flag.BoolVar(&parmAutoFormula, "autoformula", false, "automatically format string starting with = as formulae")
 	flag.BoolVar(&parmHelp, "help", false, "display usage information")
 	flag.BoolVar(&parmHelp, "h", false, "display usage information")
 	flag.BoolVar(&parmHelp, "?", false, "display usage information")
 	flag.BoolVar(&parmShowVersion, "version", false, "display version information")
 	flag.Parse()
+
+	t, err := strconv.Unquote(`"` + tmpStr + `"`)
+	if err != nil {
+		fmt.Println("Invalid column separator specified, exiting.")
+		os.Exit(1)
+	}
+	parmColSep, _ = utf8.DecodeRuneInString(t)
 
 	if parmShowVersion {
 		fmt.Println("Version ", versionInfo, ", Build timestamp ", buildTimestamp)
@@ -120,12 +131,12 @@ func parseCommandLine() {
 	}
 
 	if parmHelp {
-		fmt.Printf("You are running verion %s of %s\n\n", versionInfo, filepath.Base(os.Args[0]))
+		fmt.Printf("You are running version %s of %s\n\n", versionInfo, filepath.Base(os.Args[0]))
 		flag.Usage()
 		fmt.Println(`
         Column ranges are a comma-separated list of numbers (e.g. 1,4,8,16), intervals (e.g. 0-4,18-32) or a combination.
         Each comma group can take a type specifiers for the column,
-        one of "text", "number", "integer", "currency", date" or "standard",
+        one of "text", "number", "integer", "currency", date", "standard" or "formula"
         separated from numbers with a colon (e.g. 0:text,3-16:number,17:date)
 		`)
 		os.Exit(1)
@@ -148,7 +159,8 @@ func loadInputFile(filename string) (rows [][]string) {
 	}
 	// use csv reader to read entire file
 	r := csv.NewReader(bufio.NewReader(f))
-	r.Comma = []rune(parmColSep)[0]
+	r.Comma = parmColSep
+	r.FieldsPerRecord = -1
 	r.LazyQuotes = true
 	rows, err = r.ReadAll()
 	if err != nil {
@@ -180,11 +192,15 @@ func setRangeInformation(rowCount, colCount int) {
 // it outputs an error message and ignores the value
 func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnum int) bool {
 	success := true
+	// only convert to formula if the user specified --autoformula,
+	// otherwise use the defined type from column range -- for lazy people :-)
+	if parmAutoFormula && []rune(colString)[0] == '=' {
+		colType = "formula"
+	}
 	switch colType {
 	case "text":
 		cell.SetString(colString)
-	case "number":
-	case "currency":
+	case "number","currency":
 		floatVal, err := strconv.ParseFloat(colString, 64)
 		if err != nil {
 			fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid number, value: %s", rownum, colnum, colString))
@@ -218,6 +234,9 @@ func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnu
 				cell.NumFmt = parmExcelDateFormat
 			}
 		}
+	case "formula":
+		// colstring =<formula>
+		cell.SetFormula(colString[1:])
 	default:
 		cell.SetValue(colString)
 	}
@@ -235,7 +254,7 @@ func processDataColumns(excelRow *xlsx.Row, rownum int, csvLine []string) {
 		colType, processColumn := colRangeParsed[colnum]
 		if processColumn {
 			cell := excelRow.AddCell()
-			if rownum == 0 && parmUseTitles {
+			if rownum == 0 && !parmNoHeader {
 				// special case for the title row
 				cell.SetString(csvLine[colnum])
 				if colType == "number" || colType == "currency" {
