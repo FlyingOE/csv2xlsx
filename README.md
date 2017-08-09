@@ -29,6 +29,9 @@ Please see below for a list of command line options.
   -?	display usage information
   -abortonerror
     	abort program on first invalid cell data type
+  -autoformula
+        use value starting with an "=" as formula (default False) and do not
+        use the column datatype specified
   -colsep string
     	column separator (default '|')  (default "|")
   -columns string
@@ -46,18 +49,16 @@ Please see below for a list of command line options.
     	full pathname of output file (.xlsx file)
   -rows string
     	list of line numbers to use (1,2,8 or 1,3-14,28)
-  -rowsep string
-    	row separator (default LF)  (default "\n")
   -sheet string
     	tab name of the Excel sheet (default "fromCSV")
   -silent
     	do not display progress messages
-  -usetitles
-    	use first row as titles (will force string type) (default true)
+  -noheader
+    	do not use the first line as header (default is Yes)
 
         Column ranges are a comma-separated list of numbers (e.g. 1,4,8,16), intervals (e.g. 0-4,18-32) or a combination.
         Each comma group can take a type specifiers for the column,
-        one of "text", "number", "integer", "currency", date" or "standard",
+        one of "text", "number", "integer", "currency", date", "standard", "formula"
         separated from numbers with a colon (e.g. 0:text,3-16:number,17:date)
 ```
 
