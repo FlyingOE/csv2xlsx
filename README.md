@@ -11,11 +11,11 @@ license below), you may download the binary.
 
 Here are the SHA-256 checksums for the binaries:
 
-	07edbff0609058b31bbbfdce532f0b83919da029555970c12af5fa52b0c2f9d1  csv2xlsx_386.exe
-	818041bde85552ea4930152987c478f581614e7768e272af28b2bdd1b4940ed7  csv2xlsx_amd64.exe
-	a1c4b4a84e467f878c9ae413e732f697d75fa8ced49c5adea22f9fab251ff3c9  csv2xlsx_linux_386
-	955a8d4de854ab0c5fd7c7e676c61f61c3f59712a8da101a1db1c71ebc622bb0  csv2xlsx_linux_amd64
-	61ed47ca548ec7773080ff4a059dc2e8a04f345c45b8c0456ef7013dbf9d0047  csv2xlsx_osx
+	da5dd7d276af73553cb97677f5cf5798237de0968f3a150199a16a14340c87ff  csv2xlsx_386.exe
+	b9a96331ee89a685c665921200b4e51cff0dca98b6bb200d9e6a4bcb73a6ed04  csv2xlsx_amd64.exe
+	8667562a9b81ec0c4e978ff928594e25b4917240f833157c929a5a26e50de0b0  csv2xlsx_linux_386
+	669fcaff7ea1824fd86a89c740c8743c5d4730505a2aba65cdfccdbe25eb3152  csv2xlsx_linux_amd64
+	e84d29d4f8142a95ed80275fb94ee1356f5c3e02f0b5619b189273196adeece8  csv2xlsx_osx
 
 
 ### Usage
@@ -82,6 +82,12 @@ I am still amazed what you can accomplish within less than 200 lines of code in 
                 --silent
                 Added datatypes integer, currency
                 Prints version info on Usage or with --version
+
+    2017-08-10  0.1.3
+                - removed option --usetitles, added --noheader
+                - added datatype "formula"
+                - option --colsep now handles \t for tab correctly
+                - lots of bug fixes
 
 ### License
 
