@@ -11,11 +11,11 @@ license below), you may download the binary.
 
 Here are the SHA-256 checksums for the binaries:
 
-	da5dd7d276af73553cb97677f5cf5798237de0968f3a150199a16a14340c87ff  csv2xlsx_386.exe
-	b9a96331ee89a685c665921200b4e51cff0dca98b6bb200d9e6a4bcb73a6ed04  csv2xlsx_amd64.exe
-	8667562a9b81ec0c4e978ff928594e25b4917240f833157c929a5a26e50de0b0  csv2xlsx_linux_386
-	669fcaff7ea1824fd86a89c740c8743c5d4730505a2aba65cdfccdbe25eb3152  csv2xlsx_linux_amd64
-	e84d29d4f8142a95ed80275fb94ee1356f5c3e02f0b5619b189273196adeece8  csv2xlsx_osx
+  3bc2df1a0be3bb8cee327ebab81029d4e0cad61b51b0996f36a6bd5002d8771c  csv2xlsx_386.exe
+  f6003e08e612a996d0d5099ccbb31cd7ca3a60155fca607bf913fe98a485d0ef  csv2xlsx_amd64.exe
+  c6c2fd10025234e3400e84be5dceb45dc370729b14b3084c384f4c82bd229950  csv2xlsx_linux_386
+  9f177c313787c554fa9fabdb0852f76aaf7432ba0c136afb943faf757b827cff  csv2xlsx_linux_amd64
+  d171af9b071429a2ce76caa8063dcdedd81ab0983be01b04ab2ece1195197194  csv2xlsx_osx  
 
 
 ### Usage
@@ -38,6 +38,8 @@ Please see below for a list of command line options.
     	column range to use (see below)
   -dateformat string
     	format for CSV date cells (default YYYY-MM-DD) (default "2006-01-02")
+  -encoding
+      encoding string to use for the CSV file, case-insensitive (defaults to "utf-8")
   -exceldateformat string
     	Excel format for date cells (default as in Excel)
   -h	display usage information
@@ -61,6 +63,55 @@ Please see below for a list of command line options.
         one of "text", "number", "integer", "currency", date", "standard", "formula"
         separated from numbers with a colon (e.g. 0:text,3-16:number,17:date)
 ```
+
+### Supported encodings
+
+ * Codepage037
+ * Codepage437
+ * Codepage850
+ * Codepage852
+ * Codepage855
+ * Codepage858
+ * Codepage860
+ * Codepage862
+ * Codepage863
+ * Codepage865
+ * Codepage866
+ * Codepage1047
+ * Codepage1140
+ * ISO8859_1
+ * ISO8859_2
+ * ISO8859_3
+ * ISO8859_4
+ * ISO8859_5
+ * ISO8859_6
+ * ISO8859_6E
+ * ISO8859_6I
+ * ISO8859_7
+ * ISO8859_8
+ * ISO8859_8E
+ * ISO8859_8I
+ * ISO8859_9
+ * ISO8859_10
+ * ISO8859_13
+ * ISO8859_14
+ * ISO8859_15
+ * ISO8859_16
+ * Koi8r
+ * Koi8u
+ * Macintosh
+ * MacintoshCyrillic
+ * Windows874
+ * Windows1250
+ * Windows1251
+ * Windows1252
+ * Windows1253
+ * Windows1254
+ * Windows1255
+ * Windows1256
+ * Windows1257
+ * Windows1258
+
 
 ### Source
 
@@ -89,6 +140,10 @@ I am still amazed what you can accomplish within less than 200 lines of code in 
                 - added datatype "formula"
                 - option --colsep now handles \t for tab correctly
                 - lots of bug fixes
+
+    2017-12-21 0.2
+                Added option --encoding
+
 
 ### License
 

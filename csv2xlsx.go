@@ -3,16 +3,18 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
-	"errors"
 	"flag"
 	"fmt"
-	"github.com/tealeg/xlsx"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/tealeg/xlsx"
+	"golang.org/x/text/encoding/charmap"
 )
 
 var (
@@ -21,6 +23,7 @@ var (
 	parmSheet           string
 	parmInFile          string
 	parmOutFile         string
+	parmEncoding        string
 	parmColSep          rune
 	parmDateFormat      string
 	parmExcelDateFormat string
@@ -51,7 +54,7 @@ func parseCommaGroup(grpstr string) (map[int]string, error) {
 	// we need exactly one number or an a-b interval (2 number parts)
 	parts := strings.Split(grpstr, "-")
 	if len(parts) < 1 || len(parts) > 2 {
-		return nil, errors.New(fmt.Sprintf("Invalid range group '%s' found.", grpstr))
+		return nil, fmt.Errorf("Invalid range group '%s' found.", grpstr)
 	}
 	// check for type (currently needed only for columns, will be ignored for lines)
 	datatype := "standard"
@@ -106,6 +109,7 @@ func parseCommandLine() {
 	flag.StringVar(&parmRows, "rows", "", "list of line numbers to use (1,2,8 or 1,3-14,28)")
 	flag.StringVar(&parmSheet, "sheet", "fromCSV", "tab name of the Excel sheet")
 	flag.StringVar(&tmpStr, "colsep", "|", "column separator (default '|') ")
+	flag.StringVar(&parmEncoding, "encoding", "utf-8", "character encoding")
 	// not settable with csv reader
 	//flag.StringVar(&parmRowSep, "rowsep", "\n", "row separator (default LF) ")
 	flag.BoolVar(&parmNoHeader, "noheader", false, "no headers in first line, only data lines (default false)")
@@ -151,14 +155,116 @@ func parseCommandLine() {
 // currently there is not need for gigabyte files, but maybe this should be done streaming.
 // in addition, we need row and column counts first to set the default ranges later on in the program flow.
 func loadInputFile(filename string) (rows [][]string) {
+	var rdr io.Reader
 	f, err := os.Open(filename)
 	defer f.Close()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	// use csv reader to read entire file
-	r := csv.NewReader(bufio.NewReader(f))
+	enc := strings.ToLower(parmEncoding)
+
+	if enc == "utf8" || enc == "utf-8" {
+		rdr = bufio.NewReader(f)
+	} else {
+		switch strings.ToUpper(parmEncoding) {
+		case "CODEPAGE037":
+			rdr = charmap.CodePage037.NewDecoder().Reader(f)
+		case "CODEPAGE437":
+			rdr = charmap.CodePage437.NewDecoder().Reader(f)
+		case "CODEPAGE850":
+			rdr = charmap.CodePage850.NewDecoder().Reader(f)
+		case "CODEPAGE852":
+			rdr = charmap.CodePage852.NewDecoder().Reader(f)
+		case "CODEPAGE855":
+			rdr = charmap.CodePage855.NewDecoder().Reader(f)
+		case "CODEPAGE858":
+			rdr = charmap.CodePage858.NewDecoder().Reader(f)
+		case "CODEPAGE860":
+			rdr = charmap.CodePage860.NewDecoder().Reader(f)
+		case "CODEPAGE862":
+			rdr = charmap.CodePage862.NewDecoder().Reader(f)
+		case "CODEPAGE863":
+			rdr = charmap.CodePage863.NewDecoder().Reader(f)
+		case "CODEPAGE865":
+			rdr = charmap.CodePage865.NewDecoder().Reader(f)
+		case "CODEPAGE866":
+			rdr = charmap.CodePage866.NewDecoder().Reader(f)
+		case "CODEPAGE1047":
+			rdr = charmap.CodePage1047.NewDecoder().Reader(f)
+		case "CODEPAGE1140":
+			rdr = charmap.CodePage1140.NewDecoder().Reader(f)
+		case "ISO8859_1":
+			rdr = charmap.ISO8859_1.NewDecoder().Reader(f)
+		case "ISO8859_2":
+			rdr = charmap.ISO8859_2.NewDecoder().Reader(f)
+		case "ISO8859_3":
+			rdr = charmap.ISO8859_3.NewDecoder().Reader(f)
+		case "ISO8859_4":
+			rdr = charmap.ISO8859_4.NewDecoder().Reader(f)
+		case "ISO8859_5":
+			rdr = charmap.ISO8859_5.NewDecoder().Reader(f)
+		case "ISO8859_6":
+			rdr = charmap.ISO8859_6.NewDecoder().Reader(f)
+		case "ISO8859_6E":
+			rdr = charmap.ISO8859_6E.NewDecoder().Reader(f)
+		case "ISO8859_6I":
+			rdr = charmap.ISO8859_6I.NewDecoder().Reader(f)
+		case "ISO8859_7":
+			rdr = charmap.ISO8859_7.NewDecoder().Reader(f)
+		case "ISO8859_8":
+			rdr = charmap.ISO8859_8.NewDecoder().Reader(f)
+		case "ISO8859_8E":
+			rdr = charmap.ISO8859_8E.NewDecoder().Reader(f)
+		case "ISO8859_8I":
+			rdr = charmap.ISO8859_8I.NewDecoder().Reader(f)
+		case "ISO8859_9":
+			rdr = charmap.ISO8859_9.NewDecoder().Reader(f)
+		case "ISO8859_10":
+			rdr = charmap.ISO8859_10.NewDecoder().Reader(f)
+		case "ISO8859_13":
+			rdr = charmap.ISO8859_13.NewDecoder().Reader(f)
+		case "ISO8859_14":
+			rdr = charmap.ISO8859_14.NewDecoder().Reader(f)
+		case "ISO8859_15":
+			rdr = charmap.ISO8859_15.NewDecoder().Reader(f)
+		case "ISO8859_16":
+			rdr = charmap.ISO8859_16.NewDecoder().Reader(f)
+		case "KOI8R":
+			rdr = charmap.KOI8R.NewDecoder().Reader(f)
+		case "KOI8U":
+			rdr = charmap.KOI8U.NewDecoder().Reader(f)
+		case "MACINTOSH":
+			rdr = charmap.Macintosh.NewDecoder().Reader(f)
+		case "MACINTOSHCYRILLIC":
+			rdr = charmap.MacintoshCyrillic.NewDecoder().Reader(f)
+		case "WINDOWS874":
+			rdr = charmap.Windows874.NewDecoder().Reader(f)
+		case "WINDOWS1250":
+			rdr = charmap.Windows1250.NewDecoder().Reader(f)
+		case "WINDOWS1251":
+			rdr = charmap.Windows1251.NewDecoder().Reader(f)
+		case "WINDOWS1252":
+			rdr = charmap.Windows1252.NewDecoder().Reader(f)
+		case "WINDOWS1253":
+			rdr = charmap.Windows1253.NewDecoder().Reader(f)
+		case "WINDOWS1254":
+			rdr = charmap.Windows1254.NewDecoder().Reader(f)
+		case "WINDOWS1255":
+			rdr = charmap.Windows1255.NewDecoder().Reader(f)
+		case "WINDOWS1256":
+			rdr = charmap.Windows1256.NewDecoder().Reader(f)
+		case "WINDOWS1257":
+			rdr = charmap.Windows1257.NewDecoder().Reader(f)
+		case "WINDOWS1258":
+			rdr = charmap.Windows1258.NewDecoder().Reader(f)
+		default:
+			fmt.Println("Invalid encoding specified, defaulting to UTF-8")
+			rdr = bufio.NewReader(f)
+		}
+	}
+
+	r := csv.NewReader(rdr)
 	r.Comma = parmColSep
 	r.FieldsPerRecord = -1
 	r.LazyQuotes = true
@@ -200,7 +306,7 @@ func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnu
 	switch colType {
 	case "text":
 		cell.SetString(colString)
-	case "number","currency":
+	case "number", "currency":
 		floatVal, err := strconv.ParseFloat(colString, 64)
 		if err != nil {
 			fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid number, value: %s", rownum, colnum, colString))
