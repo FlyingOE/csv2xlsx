@@ -11,12 +11,11 @@ license below), you may download the binary.
 
 Here are the SHA-256 checksums for the binaries:
 
-    3bc2df1a0be3bb8cee327ebab81029d4e0cad61b51b0996f36a6bd5002d8771c  csv2xlsx_386.exe
-    f6003e08e612a996d0d5099ccbb31cd7ca3a60155fca607bf913fe98a485d0ef  csv2xlsx_amd64.exe
-    c6c2fd10025234e3400e84be5dceb45dc370729b14b3084c384f4c82bd229950  csv2xlsx_linux_386
-    9f177c313787c554fa9fabdb0852f76aaf7432ba0c136afb943faf757b827cff  csv2xlsx_linux_amd64
-    d171af9b071429a2ce76caa8063dcdedd81ab0983be01b04ab2ece1195197194  csv2xlsx_osx  
-
+    f209b32d6fcc07bb5788789bf38419b80ceace8e37b12fd395adfabce1e861f1  csv2xlsx_386.exe
+    76be18318b797742985b4547ddb502688b014bb13f19a1b5d9e886869446e33e  csv2xlsx_amd64.exe
+    97fce8d687a73c770dd5463c01ee126bc82fafb1da5fd49dd4751dce06f2cebd  csv2xlsx_linux_386
+    a931741383cb68a10bad6a107b0956d5f9e1e23eecb4c11c399bb463307c77bc  csv2xlsx_linux_amd64
+    7fbfce2072fedb66fe1a26b1e28399e3ef3b68fc3179778f1c59230fecbda904  csv2xlsx_osx
 
 ### Usage
 
@@ -143,6 +142,9 @@ I am still amazed what you can accomplish within less than 200 lines of code in 
 
     2017-12-21 0.2
                 Added option --encoding
+
+    2017-06-20 0.3
+                Added better version of ParseFloat to allow scientific number notation
 
 
 ### License
