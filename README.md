@@ -11,11 +11,11 @@ license below), you may download the binary.
 
 Here are the SHA-256 checksums for the binaries:
 
-    f209b32d6fcc07bb5788789bf38419b80ceace8e37b12fd395adfabce1e861f1  csv2xlsx_386.exe
-    76be18318b797742985b4547ddb502688b014bb13f19a1b5d9e886869446e33e  csv2xlsx_amd64.exe
-    97fce8d687a73c770dd5463c01ee126bc82fafb1da5fd49dd4751dce06f2cebd  csv2xlsx_linux_386
-    a931741383cb68a10bad6a107b0956d5f9e1e23eecb4c11c399bb463307c77bc  csv2xlsx_linux_amd64
-    7fbfce2072fedb66fe1a26b1e28399e3ef3b68fc3179778f1c59230fecbda904  csv2xlsx_osx
+    9cd013ac244c0d364302da1eab724ea93831f6088188bcaaae08545f00a4582a  csv2xlsx_386.exe
+    535c3937447497bd0769296d434c809b41e1ead7bc463f560888ec51cfb95794  csv2xlsx_amd64.exe
+    d491329c16f44d82c6d50bb4afa74bd704f25ade7e93b28d0ec0b747648c9a6e  csv2xlsx_linux_386
+    cfa63a9eb6ab4d9c418afe95cf54524b32611a01d970e95ed57831b1368406f1  csv2xlsx_linux_amd64
+    daa9ff8f2ccb49b6ccf4fd7d7b600011a8bd4ba9fe1b3870ce15dcbbe6fa1092  csv2xlsx_osx
 
 ### Usage
 
@@ -41,13 +41,18 @@ Please see below for a list of command line options.
       encoding string to use for the CSV file, case-insensitive (defaults to "utf-8")
   -exceldateformat string
     	Excel format for date cells (default as in Excel)
-  -h	display usage information
+  -filemask
+        bulk mode, specify a file mask here (e.g. "/use/docs/datalib/2018*.csv")
+        make sure to quote the filespace to prevent shell globbing
+  -h	
   -help
     	display usage information
   -infile string
     	full pathname of input file (CSV file)
   -outfile string
     	full pathname of output file (.xlsx file)
+  -outdir 
+        path to a target directory for the xlsx files (must exist and be writable)      
   -rows string
     	list of line numbers to use (1,2,8 or 1,3-14,28)
   -sheet string
@@ -143,8 +148,11 @@ I am still amazed what you can accomplish within less than 200 lines of code in 
     2017-12-21 0.2
                 Added option --encoding
 
-    2017-06-20 0.3
+    2018-06-20 0.3
                 Added better version of ParseFloat to allow scientific number notation
+
+    2018-06-21 0.3.1
+                Added -filemask option to allow bulk processing
 
 
 ### License

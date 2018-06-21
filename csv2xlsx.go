@@ -24,6 +24,8 @@ var (
 	parmSheet           string
 	parmInFile          string
 	parmOutFile         string
+	parmOutDir          string
+	parmFileMask        string
 	parmEncoding        string
 	parmColSep          rune
 	parmDateFormat      string
@@ -133,6 +135,8 @@ func parseRangeString(rangeStr string) map[int]string {
 func parseCommandLine() {
 	flag.StringVar(&parmInFile, "infile", "", "full pathname of input file (CSV file)")
 	flag.StringVar(&parmOutFile, "outfile", "", "full pathname of output file (.xlsx file)")
+	flag.StringVar(&parmFileMask, "filemask", "", "file mask for bulk processing (overwrites -infile/-outfile)")
+	flag.StringVar(&parmOutDir, "outdir", "", "target directory for the .xlsx file (not to be used with outfile)")
 	flag.StringVar(&parmDateFormat, "dateformat", "2006-01-02", "format for CSV date cells (default YYYY-MM-DD)")
 	flag.StringVar(&parmExcelDateFormat, "exceldateformat", "", "Excel format for date cells (default as in Excel)")
 	flag.StringVar(&parmCols, "columns", "", "column range to use (see below)")
@@ -175,9 +179,17 @@ func parseCommandLine() {
 		`)
 		os.Exit(1)
 	}
-	if _, err := os.Stat(parmInFile); os.IsNotExist(err) {
-		fmt.Println("Input file does not exist, exiting.")
+
+	if parmOutFile != "" && parmOutDir != "" {
+		fmt.Println("Cannot use -outfile and -outdir together (-outdir to be used with -filemask), exiting.")
 		os.Exit(1)
+	}
+
+	if parmFileMask == "" {
+		if _, err := os.Stat(parmInFile); os.IsNotExist(err) {
+			fmt.Println("Input file does not exist, exiting.")
+			os.Exit(1)
+		}
 	}
 }
 
@@ -407,11 +419,36 @@ func processDataColumns(excelRow *xlsx.Row, rownum int, csvLine []string) {
 	}
 }
 
-// the main entry function
-func main() {
-	// preflight stuff
-	parseCommandLine()
-	rows := loadInputFile(parmInFile)
+// getInputFiles retrieves a list of input files for a given filespec
+// returns a slice of strings or aborts the program on error
+func getInputFiles(inFileSpec string) []string {
+	files, err := filepath.Glob(inFileSpec)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return files
+}
+
+// buildOutputName generates the .xlsx file name for a given input file
+// if the user specified the -outdir option, use this directory as target path
+// return a string with the target file name
+func buildOutputName(infile string) string {
+	outfile := strings.TrimSuffix(infile, filepath.Ext(infile)) + ".xlsx"
+	if parmOutDir != "" {
+		if _, err := os.Stat(parmOutDir); err == nil {
+			outfile = filepath.Join(parmOutDir, filepath.Base(outfile))
+		} else {
+			fmt.Println(fmt.Sprintf("Output directory %q does not exist, exiting.", parmOutDir))
+			os.Exit(1)
+		}
+	}
+	return outfile
+}
+
+// convertFile does the conversion from CSV to Excel .xslx
+func convertFile(infile, outfile string) {
+	rows := loadInputFile(infile)
 	setRangeInformation(len(rows), len(rows[0]))
 
 	// excel stuff, create file, add worksheet, define a right-aligned style
@@ -429,5 +466,33 @@ func main() {
 			processDataColumns(excelRow, rownum, line)
 		}
 	}
-	workBook.Save(parmOutFile)
+	err := workBook.Save(outfile)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+// the main entry function
+func main() {
+	// preflight stuff
+	var fileList []string
+	parseCommandLine()
+
+	// either glob the file mask or retrieve the single input file
+	// this way we can just iterate over the slice (and maybe later
+	// add an option for a specified list of files)
+	if parmFileMask != "" {
+		fmt.Println("Found -filemask parameter, running in bulk mode")
+		fileList = getInputFiles(parmFileMask)
+	} else {
+		fileList = getInputFiles(parmInFile)
+	}
+
+	// iterate over list of files to process and convert them
+	for _, infile := range fileList {
+		outfile := buildOutputName(infile)
+		fmt.Println("Converting", infile, "=>", outfile)
+		convertFile(infile, outfile)
+	}
 }
