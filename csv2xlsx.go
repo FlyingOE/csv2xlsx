@@ -27,6 +27,9 @@ var (
 	parmOutDir          string
 	parmFileMask        string
 	parmEncoding        string
+	parmHeaderLines     int
+	parmFontSize        int
+	parmFontName        string
 	parmColSep          rune
 	parmDateFormat      string
 	parmExcelDateFormat string
@@ -144,9 +147,12 @@ func parseCommandLine() {
 	flag.StringVar(&parmSheet, "sheet", "fromCSV", "tab name of the Excel sheet")
 	flag.StringVar(&tmpStr, "colsep", "|", "column separator (default '|') ")
 	flag.StringVar(&parmEncoding, "encoding", "utf-8", "character encoding")
+	flag.StringVar(&parmFontName, "fontname", "Arial", "set the font name to use")
+	flag.IntVar(&parmFontSize, "fontsize", 12, "set the default font size to use")
+	flag.IntVar(&parmHeaderLines, "headerlines", 1, "set the number of header lines (use 0 for no header)")
 	// not settable with csv reader
 	//flag.StringVar(&parmRowSep, "rowsep", "\n", "row separator (default LF) ")
-	flag.BoolVar(&parmNoHeader, "noheader", false, "no headers in first line, only data lines (default false)")
+	flag.BoolVar(&parmNoHeader, "noheader", false, "DEPRECATED (use headerlines) no header, only data lines")
 	flag.BoolVar(&parmAbortOnError, "abortonerror", false, "abort program on first invalid cell data type")
 	flag.BoolVar(&parmSilent, "silent", false, "do not display progress messages")
 	flag.BoolVar(&parmAutoFormula, "autoformula", false, "automatically format string starting with = as formulae")
@@ -402,7 +408,8 @@ func processDataColumns(excelRow *xlsx.Row, rownum int, csvLine []string) {
 		colType, processColumn := colRangeParsed[colnum]
 		if processColumn {
 			cell := excelRow.AddCell()
-			if rownum == 0 && !parmNoHeader {
+			isHeader := (parmHeaderLines > 0) || !parmNoHeader
+			if isHeader && (rownum <= parmHeaderLines) {
 				// special case for the title row
 				cell.SetString(csvLine[colnum])
 				if colType == "number" || colType == "currency" {
@@ -435,6 +442,9 @@ func getInputFiles(inFileSpec string) []string {
 // return a string with the target file name
 func buildOutputName(infile string) string {
 	outfile := strings.TrimSuffix(infile, filepath.Ext(infile)) + ".xlsx"
+	if parmOutFile != "" {
+		outfile = parmOutFile
+	}
 	if parmOutDir != "" {
 		if _, err := os.Stat(parmOutDir); err == nil {
 			outfile = filepath.Join(parmOutDir, filepath.Base(outfile))
@@ -452,6 +462,7 @@ func convertFile(infile, outfile string) {
 	setRangeInformation(len(rows), len(rows[0]))
 
 	// excel stuff, create file, add worksheet, define a right-aligned style
+	xlsx.SetDefaultFont(parmFontSize, parmFontName)
 	workBook = xlsx.NewFile()
 	workSheet, _ = workBook.AddSheet(parmSheet)
 	rightAligned = &xlsx.Style{}

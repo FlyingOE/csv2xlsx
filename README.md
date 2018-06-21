@@ -11,11 +11,11 @@ license below), you may download the binary.
 
 Here are the SHA-256 checksums for the binaries:
 
-    9cd013ac244c0d364302da1eab724ea93831f6088188bcaaae08545f00a4582a  csv2xlsx_386.exe
-    535c3937447497bd0769296d434c809b41e1ead7bc463f560888ec51cfb95794  csv2xlsx_amd64.exe
-    d491329c16f44d82c6d50bb4afa74bd704f25ade7e93b28d0ec0b747648c9a6e  csv2xlsx_linux_386
-    cfa63a9eb6ab4d9c418afe95cf54524b32611a01d970e95ed57831b1368406f1  csv2xlsx_linux_amd64
-    daa9ff8f2ccb49b6ccf4fd7d7b600011a8bd4ba9fe1b3870ce15dcbbe6fa1092  csv2xlsx_osx
+    86fab8cdb756d612391bdfca36641414424cb0cfe7c9c196329124976f3d3a8c  csv2xlsx_386.exe
+    91b94bb4c0acf91bcd2b3874d7ab7f96e204e6c0acb1d0119694bb740dedb6f4  csv2xlsx_amd64.exe
+    d1b3dc8bfa72647f4e92dbafede0ee729ccb488a7b2a400304634bf03439b744  csv2xlsx_linux_386
+    3e8661e7ef681c796452736e9004f19653ccf01c916f3c6a8b1e67d99f1e0ab5  csv2xlsx_linux_amd64
+    2933cdca783beca8fbcfccc2d396f4ec115c898a9f69680d6c64806ac84e1804  csv2xlsx_osx    
 
 ### Usage
 
@@ -44,6 +44,8 @@ Please see below for a list of command line options.
   -filemask
         bulk mode, specify a file mask here (e.g. "/use/docs/datalib/2018*.csv")
         make sure to quote the filespace to prevent shell globbing
+  -headerlines
+        specify number of header lines in the CSV file (default is 1, use 0 fpr no header)
   -h	
   -help
     	display usage information
@@ -60,7 +62,7 @@ Please see below for a list of command line options.
   -silent
     	do not display progress messages
   -noheader
-    	do not use the first line as header (default is Yes)
+    	do not use the first line as header (DEPRECATED, use headerlines option instaead)
 
         Column ranges are a comma-separated list of numbers (e.g. 1,4,8,16), intervals (e.g. 0-4,18-32) or a combination.
         Each comma group can take a type specifiers for the column,
