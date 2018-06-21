@@ -44,6 +44,8 @@ Please see below for a list of command line options.
   -filemask
         bulk mode, specify a file mask here (e.g. "/use/docs/datalib/2018*.csv")
         make sure to quote the filespec to prevent shell globbing
+        output files will have the same name as input file with a .xslx extension
+        will override any --infile or --outfile options)
   -h	
   -help
     	display usage information
@@ -52,7 +54,8 @@ Please see below for a list of command line options.
   -outfile string
     	full pathname of output file (.xlsx file)
   -outdir 
-        path to a target directory for the xlsx files (must exist and be writable)      
+        path to a target directory for the xlsx files (must exist and be writable)  
+        must not be used with --outfile
   -rows string
     	list of line numbers to use (1,2,8 or 1,3-14,28)
   -sheet string
