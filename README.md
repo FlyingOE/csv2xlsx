@@ -43,7 +43,7 @@ Please see below for a list of command line options.
     	Excel format for date cells (default as in Excel)
   -filemask
         bulk mode, specify a file mask here (e.g. "/use/docs/datalib/2018*.csv")
-        make sure to quote the filespace to prevent shell globbing
+        make sure to quote the filespec to prevent shell globbing
   -h	
   -help
     	display usage information
@@ -124,7 +124,7 @@ of people looking for such a tool, I decided to make it publicly available. I am
 I am sure there are much better, more Go-idiomatic ways to achieve this functionality. If you have feedback on how to improve
 the code or want to contribute, please do not hesitate to do so. I'd really like to improve my GO skills and learn things.
 As my spare time for coding is limited to some hours around midnight a week, so please have some patience with my answers.
-I am still amazed what you can accomplish within less than 200 lines of code in terms of making my admin part of life easier. :-)
+I am still amazed what you can accomplish within less than 500 lines of code in terms of making my admin part of life easier. :-)
 
 ### Changelog
 
