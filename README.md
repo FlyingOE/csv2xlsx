@@ -44,6 +44,8 @@ Please see below for a list of command line options.
   -filemask
         bulk mode, specify a file mask here (e.g. "/use/docs/datalib/2018*.csv")
         make sure to quote the filespace to prevent shell globbing
+        output files will have the same name as input file with a .xslx extension
+        will override any --infile or --outfile options)
   -headerlines
         specify number of header lines in the CSV file (default is 1, use 0 fpr no header)
   -h	
@@ -54,7 +56,8 @@ Please see below for a list of command line options.
   -outfile string
     	full pathname of output file (.xlsx file)
   -outdir 
-        path to a target directory for the xlsx files (must exist and be writable)      
+        path to a target directory for the xlsx files (must exist and be writable)  
+        must not be used with --outfile
   -rows string
     	list of line numbers to use (1,2,8 or 1,3-14,28)
   -sheet string
@@ -126,7 +129,7 @@ of people looking for such a tool, I decided to make it publicly available. I am
 I am sure there are much better, more Go-idiomatic ways to achieve this functionality. If you have feedback on how to improve
 the code or want to contribute, please do not hesitate to do so. I'd really like to improve my GO skills and learn things.
 As my spare time for coding is limited to some hours around midnight a week, so please have some patience with my answers.
-I am still amazed what you can accomplish within less than 200 lines of code in terms of making my admin part of life easier. :-)
+I am still amazed what you can accomplish within less than 500 lines of code in terms of making my admin part of life easier. :-)
 
 ### Changelog
 
@@ -155,6 +158,11 @@ I am still amazed what you can accomplish within less than 200 lines of code in 
 
     2018-06-21 0.3.1
                 Added -filemask option to allow bulk processing
+
+    2018-06-21 0.3.2
+                Bugfix that caused -outfile to be ignored in 0.3.1
+                new option for -fontsize and -fontname
+                new option for -headerlines
 
 
 ### License
