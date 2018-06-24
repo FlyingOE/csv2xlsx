@@ -19,107 +19,26 @@ Here are the SHA-256 checksums for the binaries:
 
 ### Usage
 
-You execute the program from a command line shell and prove at least the input file and the output file name.
-Please see below for a list of command line options.
+You execute the program from the command prompt of your operating system.
 
-### Command line options
+Ths most basic use case is `csv2xlsx -infile test.csv -outfile result.xlsx`, where you
+take an input CSV file in UTF-8 and write out the .xslx file under a new file name.
 
-```
-  -?	display usage information
-  -abortonerror
-    	abort program on first invalid cell data type
-  -autoformula
-        use value starting with an "=" as formula (default False) and do not
-        use the column datatype specified
-  -colsep string
-    	column separator (default '|')  (default "|")
-  -columns string
-    	column range to use (see below)
-  -dateformat string
-    	format for CSV date cells (default YYYY-MM-DD) (default "2006-01-02")
-  -encoding
-      encoding string to use for the CSV file, case-insensitive (defaults to "utf-8")
-  -exceldateformat string
-    	Excel format for date cells (default as in Excel)
-  -filemask
-        bulk mode, specify a file mask here (e.g. "/use/docs/datalib/2018*.csv")
-        make sure to quote the filespace to prevent shell globbing
-        output files will have the same name as input file with a .xslx extension
-        will override any --infile or --outfile options)
-  -headerlines
-        specify number of header lines in the CSV file (default is 1, use 0 fpr no header)
-  -h	
-  -help
-    	display usage information
-  -infile string
-    	full pathname of input file (CSV file)
-  -outfile string
-    	full pathname of output file (.xlsx file)
-  -outdir 
-        path to a target directory for the xlsx files (must exist and be writable)  
-        must not be used with --outfile
-  -rows string
-    	list of line numbers to use (1,2,8 or 1,3-14,28)
-  -sheet string
-    	tab name of the Excel sheet (default "fromCSV")
-  -silent
-    	do not display progress messages
-  -noheader
-    	do not use the first line as header (DEPRECATED, use headerlines option instaead)
-
-        Column ranges are a comma-separated list of numbers (e.g. 1,4,8,16), intervals (e.g. 0-4,18-32) or a combination.
-        Each comma group can take a type specifiers for the column,
-        one of "text", "number", "integer", "currency", date", "standard", "formula"
-        separated from numbers with a colon (e.g. 0:text,3-16:number,17:date)
-```
+To list all available options start `csv2xlsx` with the option `--help`.
 
 ### Supported encodings
 
- * Codepage037
- * Codepage437
- * Codepage850
- * Codepage852
- * Codepage855
- * Codepage858
- * Codepage860
- * Codepage862
- * Codepage863
- * Codepage865
- * Codepage866
- * Codepage1047
- * Codepage1140
- * ISO8859_1
- * ISO8859_2
- * ISO8859_3
- * ISO8859_4
- * ISO8859_5
- * ISO8859_6
- * ISO8859_6E
- * ISO8859_6I
- * ISO8859_7
- * ISO8859_8
- * ISO8859_8E
- * ISO8859_8I
- * ISO8859_9
- * ISO8859_10
- * ISO8859_13
- * ISO8859_14
- * ISO8859_15
- * ISO8859_16
- * Koi8r
- * Koi8u
- * Macintosh
- * MacintoshCyrillic
- * Windows874
- * Windows1250
- * Windows1251
- * Windows1252
- * Windows1253
- * Windows1254
- * Windows1255
- * Windows1256
- * Windows1257
- * Windows1258
+    Codepage037      Codepage437      Codepage850      Codepage852      Codepage855      
+    Codepage858      Codepage860      Codepage862      Codepage863      Codepage865
+    Codepage866      Codepage1047     Codepage1140      
+    ISO8859_1        ISO8859_2        ISO8859_3        ISO8859_4        ISO8859_5
+    ISO8859_6        ISO8859_6E       ISO8859_6I       ISO8859_7        ISO8859_8
+    ISO8859_8E       ISO8859_8I       ISO8859_9        ISO8859_10       ISO8859_13
+    ISO8859_14       ISO8859_15       ISO8859_16      
+    Koi8r            Koi8u      
+    Macintosh        MacintoshCyrillic      
+    Windows874       Windows1250      Windows1251      Windows1252      Windows1253      
+    Windows1254      Windows1255      Windows1256      Windows1257      Windows1258      
 
 
 ### Source
