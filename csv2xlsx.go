@@ -39,6 +39,7 @@ var (
 	parmAbortOnError    bool
 	parmShowVersion     bool
 	parmAutoFormula     bool
+	parmIgnoreEmpty     bool
 	rowRangeParsed      map[int]string
 	colRangeParsed      map[int]string
 	workBook            *xlsx.File
@@ -160,6 +161,7 @@ func parseCommandLine() {
 	flag.BoolVar(&parmHelp, "h", false, "display usage information")
 	flag.BoolVar(&parmHelp, "?", false, "display usage information")
 	flag.BoolVar(&parmShowVersion, "version", false, "display version information")
+	flag.BoolVar(&parmIgnoreEmpty, "ignoreempty", true, "do not display warnings for empty cells")
 	flag.Parse()
 
 	t, err := strconv.Unquote(`"` + tmpStr + `"`)
@@ -173,6 +175,16 @@ func parseCommandLine() {
 		fmt.Println("Version ", versionInfo, ", Build timestamp ", buildTimestamp)
 		os.Exit(0)
 	}
+
+	r := strings.NewReplacer("YYYY", "2006",
+		"MM", "01",
+		"DD", "02",
+		"HH", "15",
+		"MI", "04",
+		"SS", "04")
+
+	// Replace all pairs.
+	parmDateFormat = r.Replace(parmDateFormat)
 
 	if parmHelp {
 		fmt.Printf("You are running version %s of %s\n\n", versionInfo, filepath.Base(os.Args[0]))
@@ -351,6 +363,15 @@ func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnu
 	if parmAutoFormula && []rune(colString)[0] == '=' {
 		colType = "formula"
 	}
+	// check for content to process and
+	// process the "Ignore Warnings On Empty Cells" flag
+	if colString == "" {
+		if !parmIgnoreEmpty {
+			fmt.Println(fmt.Sprintf("Warning: Cell (%d, %d) is empty.", rownum, colnum))
+		}
+		return true
+	}
+	// type dependent write
 	switch colType {
 	case "text":
 		cell.SetString(colString)
@@ -409,7 +430,7 @@ func processDataColumns(excelRow *xlsx.Row, rownum int, csvLine []string) {
 		if processColumn {
 			cell := excelRow.AddCell()
 			isHeader := (parmHeaderLines > 0) || !parmNoHeader
-			if isHeader && (rownum <= parmHeaderLines) {
+			if isHeader && (rownum < parmHeaderLines) {
 				// special case for the title row
 				cell.SetString(csvLine[colnum])
 				if colType == "number" || colType == "currency" {

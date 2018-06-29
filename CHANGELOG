@@ -29,3 +29,5 @@
             new option for -fontsize and -fontname
             new option for -headerlines
 
+2018-06-29 0.3.3
+            Bugfix for the -dateformat parameter (now works as intended)

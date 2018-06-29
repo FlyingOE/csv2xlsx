@@ -11,11 +11,12 @@ license below), you may download the binary.
 
 Here are the SHA-256 checksums for the binaries:
 
-    86fab8cdb756d612391bdfca36641414424cb0cfe7c9c196329124976f3d3a8c  csv2xlsx_386.exe
-    91b94bb4c0acf91bcd2b3874d7ab7f96e204e6c0acb1d0119694bb740dedb6f4  csv2xlsx_amd64.exe
-    d1b3dc8bfa72647f4e92dbafede0ee729ccb488a7b2a400304634bf03439b744  csv2xlsx_linux_386
-    3e8661e7ef681c796452736e9004f19653ccf01c916f3c6a8b1e67d99f1e0ab5  csv2xlsx_linux_amd64
-    2933cdca783beca8fbcfccc2d396f4ec115c898a9f69680d6c64806ac84e1804  csv2xlsx_osx    
+    d65d1e3c81572e09d5807bd05da0c4444583cb0bb47004d1b18b98567cfbf113  csv2xlsx_386.exe
+    1d03d57ba4e274ab258a0ac7b8d4214b56cc7ade0ebb8b852aa2109bf000a4bd  csv2xlsx_amd64.exe
+    81587129a57c925ffbd8e152b4728ce1c147f05a556ecb9cd4551d738d070c4a  csv2xlsx_linux_386
+    102903ddc4d57cc971438772def756780500d8e32a5892f8adc1282e1cc56ea2  csv2xlsx_linux_amd64
+    98f0976b8c78c820965dbc0a9f869a911892f566ccdf16040d53d0a8ae0eccbd  csv2xlsx_osx
+
 
 ### Usage
 
