@@ -3,12 +3,14 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"math"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -19,36 +21,117 @@ import (
 )
 
 var (
-	parmCols            string
-	parmRows            string
-	parmSheet           string
-	parmInFile          string
-	parmOutFile         string
-	parmOutDir          string
-	parmFileMask        string
-	parmEncoding        string
-	parmHeaderLines     int
-	parmFontSize        int
-	parmFontName        string
-	parmColSep          rune
-	parmDateFormat      string
-	parmExcelDateFormat string
-	parmNoHeader        bool
-	parmSilent          bool
-	parmHelp            bool
-	parmAbortOnError    bool
-	parmShowVersion     bool
-	parmAutoFormula     bool
-	parmIgnoreEmpty     bool
-	rowRangeParsed      map[int]string
-	colRangeParsed      map[int]string
-	workBook            *xlsx.File
-	workSheet           *xlsx.Sheet
-	rightAligned        *xlsx.Style
-	buildTimestamp      string
-	versionInfo         string
-	tmpStr              string
+	versionInfo          string = "0.4.0 (2081-11-23)"
+	parmCols             string
+	parmRows             string
+	parmSheet            string
+	parmInFile           string
+	parmOutFile          string
+	parmOutDir           string
+	parmFileMask         string
+	parmEncoding         string
+	parmHeaderLines      int
+	parmFontSize         int
+	parmFontName         string
+	parmColSep           rune
+	parmDateFormat       string
+	parmExcelDateFormat  string
+	parmNoHeader         bool
+	parmSilent           bool
+	parmHelp             bool
+	parmAbortOnError     bool
+	parmShowVersion      bool
+	parmAutoFormula      bool
+	parmIgnoreEmpty      bool
+	parmOverwrite        bool
+	rowRangeParsed       map[int]string
+	colRangeParsed       map[int]string
+	workBook             *xlsx.File
+	workSheet            *xlsx.Sheet
+	rightAligned         *xlsx.Style
+	buildTimestamp       string
+	tmpStr               string
+	parmHeaderline       []string
+	parmAppendToSheet    bool
+	parmOverwriteOutFile bool
+	parmListEncoders     bool
+	parmStartRow         int
 )
+
+// Possible bailouts
+const (
+	SUCCESS             = 0
+	SHOW_USAGE          = 1
+	INVALID_RANGE       = 2
+	INVALID_COLSEP      = 3
+	INPUTFILE_NOT_FOUND = 4
+	INPUTFILE_EMPTY     = 5
+	OPEN_CREATE_ERROR   = 6
+	READ_ERROR          = 7
+	WRITE_ERROR         = 8
+	ROW_WRITE_ERROR     = 9
+	NO_OVERWRITE        = 10
+	OUTPUTDIR_NOT_FOUND = 11
+	EXCEL_SAVE_ERROR    = 12
+	INVALID_ARGUMENTS   = 13
+)
+
+var encoders = map[string]*charmap.Charmap{
+	"CODEPAGE037":       charmap.CodePage037,
+	"CODEPAGE437":       charmap.CodePage437,
+	"CODEPAGE850":       charmap.CodePage850,
+	"CODEPAGE852":       charmap.CodePage852,
+	"CODEPAGE855":       charmap.CodePage855,
+	"CODEPAGE858":       charmap.CodePage858,
+	"CODEPAGE860":       charmap.CodePage860,
+	"CODEPAGE862":       charmap.CodePage862,
+	"CODEPAGE863":       charmap.CodePage863,
+	"CODEPAGE865":       charmap.CodePage865,
+	"CODEPAGE866":       charmap.CodePage866,
+	"CODEPAGE1047":      charmap.CodePage1047,
+	"CODEPAGE1140":      charmap.CodePage1140,
+	"ISO8859_1":         charmap.ISO8859_1,
+	"ISO8859_2":         charmap.ISO8859_2,
+	"ISO8859_3":         charmap.ISO8859_3,
+	"ISO8859_4":         charmap.ISO8859_4,
+	"ISO8859_5":         charmap.ISO8859_5,
+	"ISO8859_6":         charmap.ISO8859_6,
+	"ISO8859_7":         charmap.ISO8859_7,
+	"ISO8859_8":         charmap.ISO8859_8,
+	"ISO8859_9":         charmap.ISO8859_9,
+	"ISO8859_10":        charmap.ISO8859_10,
+	"ISO8859_13":        charmap.ISO8859_13,
+	"ISO8859_14":        charmap.ISO8859_14,
+	"ISO8859_15":        charmap.ISO8859_15,
+	"ISO8859_16":        charmap.ISO8859_16,
+	"KOI8R":             charmap.KOI8R,
+	"KOI8U":             charmap.KOI8U,
+	"MACINTOSH":         charmap.Macintosh,
+	"MACINTOSHCYRILLIC": charmap.MacintoshCyrillic,
+	"WINDOWS874":        charmap.Windows874,
+	"WINDOWS1250":       charmap.Windows1250,
+	"WINDOWS1251":       charmap.Windows1251,
+	"WINDOWS1252":       charmap.Windows1252,
+	"WINDOWS1253":       charmap.Windows1253,
+	"WINDOWS1254":       charmap.Windows1254,
+	"WINDOWS1255":       charmap.Windows1255,
+	"WINDOWS1256":       charmap.Windows1256,
+	"WINDOWS1257":       charmap.Windows1257,
+	"WINDOWS1258":       charmap.Windows1258,
+}
+
+// listEncoders is a helper function to display the list
+// of supported encodings on standard output
+func listEncoders() {
+	names := make([]string, 0, len(encoders))
+	for name := range encoders {
+		names = append(names, name)
+	}
+	sort.Strings(names) //sort by key
+	for enc := range names {
+		fmt.Println(names[enc])
+	}
+}
 
 // ParseFloat ist an advanced ParseFloat for golang, support scientific notation, comma separated number
 // from yyscamper at https://gist.github.com/yyscamper/5657c360fadd6701580f3c0bcca9f63a
@@ -125,7 +208,7 @@ func parseRangeString(rangeStr string) map[int]string {
 		indexlist, err := parseCommaGroup(part)
 		if err != nil {
 			fmt.Println("Invalid range, exiting.")
-			os.Exit(1)
+			os.Exit(INVALID_RANGE)
 		}
 		for key, val := range indexlist {
 			result[key] = val
@@ -137,6 +220,7 @@ func parseRangeString(rangeStr string) map[int]string {
 // ParseCommandLine defines and parses command line flags and checks for usage info flags.
 // The function exits the program, if the input file does not exist
 func parseCommandLine() {
+	var headerString = ""
 	flag.StringVar(&parmInFile, "infile", "", "full pathname of input file (CSV file)")
 	flag.StringVar(&parmOutFile, "outfile", "", "full pathname of output file (.xlsx file)")
 	flag.StringVar(&parmFileMask, "filemask", "", "file mask for bulk processing (overwrites -infile/-outfile)")
@@ -149,10 +233,9 @@ func parseCommandLine() {
 	flag.StringVar(&tmpStr, "colsep", "|", "column separator (default '|') ")
 	flag.StringVar(&parmEncoding, "encoding", "utf-8", "character encoding")
 	flag.StringVar(&parmFontName, "fontname", "Arial", "set the font name to use")
+	flag.StringVar(&headerString, "headerline", "", "comma-separated list of header labels (enclose in quotes to be safe)")
 	flag.IntVar(&parmFontSize, "fontsize", 12, "set the default font size to use")
 	flag.IntVar(&parmHeaderLines, "headerlines", 1, "set the number of header lines (use 0 for no header)")
-	// not settable with csv reader
-	//flag.StringVar(&parmRowSep, "rowsep", "\n", "row separator (default LF) ")
 	flag.BoolVar(&parmNoHeader, "noheader", false, "DEPRECATED (use headerlines) no header, only data lines")
 	flag.BoolVar(&parmAbortOnError, "abortonerror", false, "abort program on first invalid cell data type")
 	flag.BoolVar(&parmSilent, "silent", false, "do not display progress messages")
@@ -162,18 +245,22 @@ func parseCommandLine() {
 	flag.BoolVar(&parmHelp, "?", false, "display usage information")
 	flag.BoolVar(&parmShowVersion, "version", false, "display version information")
 	flag.BoolVar(&parmIgnoreEmpty, "ignoreempty", true, "do not display warnings for empty cells")
+	flag.BoolVar(&parmOverwrite, "overwrite", false, "overwrite existing output file (default false)")
+	flag.BoolVar(&parmAppendToSheet, "append", false, "append data rows to specified sheet instead of overwriting sheet")
+	flag.BoolVar(&parmListEncoders, "listencodings", false, "display a list of supported encodings and exit")
+	flag.IntVar(&parmStartRow, "startrow", 1, "start at row N in CSV file (this value is 1-based!)")
 	flag.Parse()
 
 	t, err := strconv.Unquote(`"` + tmpStr + `"`)
 	if err != nil {
 		fmt.Println("Invalid column separator specified, exiting.")
-		os.Exit(1)
+		os.Exit(INVALID_COLSEP)
 	}
 	parmColSep, _ = utf8.DecodeRuneInString(t)
 
 	if parmShowVersion {
-		fmt.Println("Version ", versionInfo, ", Build timestamp ", buildTimestamp)
-		os.Exit(0)
+		fmt.Println("Version ", versionInfo)
+		os.Exit(SHOW_USAGE)
 	}
 
 	r := strings.NewReplacer("YYYY", "2006",
@@ -186,6 +273,26 @@ func parseCommandLine() {
 	// Replace all pairs.
 	parmDateFormat = r.Replace(parmDateFormat)
 
+	// do we have user defined header labels?
+	parmHeaderline = []string{}
+	if headerString != "" {
+		parmHeaderline = strings.Split(headerString, ",")
+		for i := range parmHeaderline {
+			parmHeaderline[i] = strings.TrimSpace(parmHeaderline[i])
+		}
+	}
+
+	// Version, Usage, List encodings and stuff...
+	if parmShowVersion {
+		fmt.Println("Version", versionInfo)
+		os.Exit(SHOW_USAGE)
+	}
+
+	if parmListEncoders {
+		listEncoders()
+		os.Exit(SHOW_USAGE)
+	}
+
 	if parmHelp {
 		fmt.Printf("You are running version %s of %s\n\n", versionInfo, filepath.Base(os.Args[0]))
 		flag.Usage()
@@ -195,18 +302,18 @@ func parseCommandLine() {
         one of "text", "number", "integer", "currency", date", "standard" or "formula"
         separated from numbers with a colon (e.g. 0:text,3-16:number,17:date)
 		`)
-		os.Exit(1)
+		os.Exit(SHOW_USAGE)
 	}
 
 	if parmOutFile != "" && parmOutDir != "" {
 		fmt.Println("Cannot use -outfile and -outdir together (-outdir to be used with -filemask), exiting.")
-		os.Exit(1)
+		os.Exit(INVALID_ARGUMENTS)
 	}
 
 	if parmFileMask == "" {
 		if _, err := os.Stat(parmInFile); os.IsNotExist(err) {
 			fmt.Println("Input file does not exist, exiting.")
-			os.Exit(1)
+			os.Exit(INPUTFILE_NOT_FOUND)
 		}
 	}
 }
@@ -214,127 +321,45 @@ func parseCommandLine() {
 // loadInputFile reads the complete input file into a matrix of strings.
 // currently there is not need for gigabyte files, but maybe this should be done streaming.
 // in addition, we need row and column counts first to set the default ranges later on in the program flow.
-func loadInputFile(filename string) (rows [][]string) {
+func loadInputFile(filename string) (rows [][]string, err error) {
 	var rdr io.Reader
+
+	// check if file exists
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		return nil, errors.New(fmt.Sprintf("Input file %s does not exist", filename))
+	}
+
+	// open input file
 	f, err := os.Open(filename)
 	defer f.Close()
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return nil, errors.New(fmt.Sprintf("Error opening input file %s", filename))
 	}
-	enc := strings.ToLower(parmEncoding)
 
-	if enc == "utf8" || enc == "utf-8" {
+	// check encoding for input file
+	encname := strings.ToUpper(parmEncoding)
+	if encname == "UTF8" || encname == "UTF-8" {
 		rdr = bufio.NewReader(f)
 	} else {
-		switch strings.ToUpper(parmEncoding) {
-		case "CODEPAGE037":
-			rdr = charmap.CodePage037.NewDecoder().Reader(f)
-		case "CODEPAGE437":
-			rdr = charmap.CodePage437.NewDecoder().Reader(f)
-		case "CODEPAGE850":
-			rdr = charmap.CodePage850.NewDecoder().Reader(f)
-		case "CODEPAGE852":
-			rdr = charmap.CodePage852.NewDecoder().Reader(f)
-		case "CODEPAGE855":
-			rdr = charmap.CodePage855.NewDecoder().Reader(f)
-		case "CODEPAGE858":
-			rdr = charmap.CodePage858.NewDecoder().Reader(f)
-		case "CODEPAGE860":
-			rdr = charmap.CodePage860.NewDecoder().Reader(f)
-		case "CODEPAGE862":
-			rdr = charmap.CodePage862.NewDecoder().Reader(f)
-		case "CODEPAGE863":
-			rdr = charmap.CodePage863.NewDecoder().Reader(f)
-		case "CODEPAGE865":
-			rdr = charmap.CodePage865.NewDecoder().Reader(f)
-		case "CODEPAGE866":
-			rdr = charmap.CodePage866.NewDecoder().Reader(f)
-		case "CODEPAGE1047":
-			rdr = charmap.CodePage1047.NewDecoder().Reader(f)
-		case "CODEPAGE1140":
-			rdr = charmap.CodePage1140.NewDecoder().Reader(f)
-		case "ISO8859_1":
-			rdr = charmap.ISO8859_1.NewDecoder().Reader(f)
-		case "ISO8859_2":
-			rdr = charmap.ISO8859_2.NewDecoder().Reader(f)
-		case "ISO8859_3":
-			rdr = charmap.ISO8859_3.NewDecoder().Reader(f)
-		case "ISO8859_4":
-			rdr = charmap.ISO8859_4.NewDecoder().Reader(f)
-		case "ISO8859_5":
-			rdr = charmap.ISO8859_5.NewDecoder().Reader(f)
-		case "ISO8859_6":
-			rdr = charmap.ISO8859_6.NewDecoder().Reader(f)
-		case "ISO8859_6E":
-			rdr = charmap.ISO8859_6E.NewDecoder().Reader(f)
-		case "ISO8859_6I":
-			rdr = charmap.ISO8859_6I.NewDecoder().Reader(f)
-		case "ISO8859_7":
-			rdr = charmap.ISO8859_7.NewDecoder().Reader(f)
-		case "ISO8859_8":
-			rdr = charmap.ISO8859_8.NewDecoder().Reader(f)
-		case "ISO8859_8E":
-			rdr = charmap.ISO8859_8E.NewDecoder().Reader(f)
-		case "ISO8859_8I":
-			rdr = charmap.ISO8859_8I.NewDecoder().Reader(f)
-		case "ISO8859_9":
-			rdr = charmap.ISO8859_9.NewDecoder().Reader(f)
-		case "ISO8859_10":
-			rdr = charmap.ISO8859_10.NewDecoder().Reader(f)
-		case "ISO8859_13":
-			rdr = charmap.ISO8859_13.NewDecoder().Reader(f)
-		case "ISO8859_14":
-			rdr = charmap.ISO8859_14.NewDecoder().Reader(f)
-		case "ISO8859_15":
-			rdr = charmap.ISO8859_15.NewDecoder().Reader(f)
-		case "ISO8859_16":
-			rdr = charmap.ISO8859_16.NewDecoder().Reader(f)
-		case "KOI8R":
-			rdr = charmap.KOI8R.NewDecoder().Reader(f)
-		case "KOI8U":
-			rdr = charmap.KOI8U.NewDecoder().Reader(f)
-		case "MACINTOSH":
-			rdr = charmap.Macintosh.NewDecoder().Reader(f)
-		case "MACINTOSHCYRILLIC":
-			rdr = charmap.MacintoshCyrillic.NewDecoder().Reader(f)
-		case "WINDOWS874":
-			rdr = charmap.Windows874.NewDecoder().Reader(f)
-		case "WINDOWS1250":
-			rdr = charmap.Windows1250.NewDecoder().Reader(f)
-		case "WINDOWS1251":
-			rdr = charmap.Windows1251.NewDecoder().Reader(f)
-		case "WINDOWS1252":
-			rdr = charmap.Windows1252.NewDecoder().Reader(f)
-		case "WINDOWS1253":
-			rdr = charmap.Windows1253.NewDecoder().Reader(f)
-		case "WINDOWS1254":
-			rdr = charmap.Windows1254.NewDecoder().Reader(f)
-		case "WINDOWS1255":
-			rdr = charmap.Windows1255.NewDecoder().Reader(f)
-		case "WINDOWS1256":
-			rdr = charmap.Windows1256.NewDecoder().Reader(f)
-		case "WINDOWS1257":
-			rdr = charmap.Windows1257.NewDecoder().Reader(f)
-		case "WINDOWS1258":
-			rdr = charmap.Windows1258.NewDecoder().Reader(f)
-		default:
-			fmt.Println("Invalid encoding specified, defaulting to UTF-8")
+		if enc, ok := encoders[encname]; ok {
+			rdr = enc.NewDecoder().Reader(f)
+		} else {
+			fmt.Println(fmt.Sprintf("Specified encoding \"%s\" not found, defaulting to UTF-8\n", parmEncoding))
 			rdr = bufio.NewReader(f)
 		}
 	}
 
+	// read file data
 	r := csv.NewReader(rdr)
 	r.Comma = parmColSep
 	r.FieldsPerRecord = -1
 	r.LazyQuotes = true
 	rows, err = r.ReadAll()
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(2)
+		return nil, errors.New(fmt.Sprintf("Error reading CSV file %s", filename))
 	}
-	// if we get here, we have file data, so no need for an error value.
-	return rows
+
+	return rows, nil
 }
 
 // setRangeInformation uses the input file's row and column count to set the default ranges
@@ -432,7 +457,11 @@ func processDataColumns(excelRow *xlsx.Row, rownum int, csvLine []string) {
 			isHeader := (parmHeaderLines > 0) || !parmNoHeader
 			if isHeader && (rownum < parmHeaderLines) {
 				// special case for the title row
-				cell.SetString(csvLine[colnum])
+				if len(parmHeaderline) > 0 && len(parmHeaderline) > colnum {
+					cell.SetString(parmHeaderline[colnum])
+				} else {
+					cell.SetString(csvLine[colnum])
+				}
 				if colType == "number" || colType == "currency" {
 					cell.SetStyle(rightAligned)
 				}
@@ -440,7 +469,7 @@ func processDataColumns(excelRow *xlsx.Row, rownum int, csvLine []string) {
 				// if the user wanted drama (--abortonerror), exit on first error
 				ok := writeCellContents(cell, csvLine[colnum], colType, rownum, colnum)
 				if !ok && parmAbortOnError {
-					os.Exit(3)
+					os.Exit(WRITE_ERROR)
 				}
 			}
 		}
@@ -453,7 +482,7 @@ func getInputFiles(inFileSpec string) []string {
 	files, err := filepath.Glob(inFileSpec)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		os.Exit(INPUTFILE_NOT_FOUND)
 	}
 	return files
 }
@@ -471,23 +500,75 @@ func buildOutputName(infile string) string {
 			outfile = filepath.Join(parmOutDir, filepath.Base(outfile))
 		} else {
 			fmt.Println(fmt.Sprintf("Output directory %q does not exist, exiting.", parmOutDir))
-			os.Exit(1)
+			os.Exit(OUTPUTDIR_NOT_FOUND)
 		}
 	}
 	return outfile
 }
 
+// openOrCreateFile checks if the specified filename exists and
+// tries to read the file subsequently. If the file does not exist,
+// a new file instance is created
+func openOrCreateFile(filename string) (*xlsx.File, error) {
+	var err error
+	var f *xlsx.File
+	if _, err = os.Stat(filename); os.IsNotExist(err) {
+		f = xlsx.NewFile()
+		err = nil
+	} else {
+		f, err = xlsx.OpenFile(filename)
+	}
+	return f, err
+}
+
+// getWorkSheet retrieves the specified sheet from the workbook
+// if the sheet does not exist, it is appended to the file.
+// Returns a pointer to the sheet
+func getWorkSheet(sheetName string, workBook *xlsx.File, appendSheet bool) *xlsx.Sheet {
+	var sh *xlsx.Sheet
+	var ok bool
+	if sh, ok = workBook.Sheet[sheetName]; !ok {
+		sh, _ = workBook.AddSheet(sheetName)
+	} else {
+		if !appendSheet {
+			// clear the sheets's contents
+			sh.Rows = []*xlsx.Row{}
+		}
+	}
+	return sh
+}
+
 // convertFile does the conversion from CSV to Excel .xslx
-func convertFile(infile, outfile string) {
-	rows := loadInputFile(infile)
+func convertFile(infile, outfile string) bool {
+
+	if _, err := os.Stat(outfile); err == nil {
+		if !parmOverwrite {
+			fmt.Println(fmt.Sprintf("Output file %s exists, skipping (use --overwrite?)", outfile))
+			return false
+		}
+	}
+
+	rows, err := loadInputFile(infile)
+	if err != nil {
+		// erorr occured, skip this file
+		fmt.Println(err)
+		return false
+	}
 	setRangeInformation(len(rows), len(rows[0]))
 
 	// excel stuff, create file, add worksheet, define a right-aligned style
 	xlsx.SetDefaultFont(parmFontSize, parmFontName)
-	workBook = xlsx.NewFile()
-	workSheet, _ = workBook.AddSheet(parmSheet)
 	rightAligned = &xlsx.Style{}
 	rightAligned.Alignment = xlsx.Alignment{Horizontal: "right"}
+
+	workBook, err = openOrCreateFile(outfile)
+	if err != nil {
+		// erorr occured, skip this file
+		fmt.Println(err)
+		return false
+	}
+
+	workSheet = getWorkSheet(parmSheet, workBook, parmAppendToSheet)
 
 	// loop thru line and column ranges and process data cells
 	for rownum := 0; rownum < len(rows); rownum++ {
@@ -498,11 +579,13 @@ func convertFile(infile, outfile string) {
 			processDataColumns(excelRow, rownum, line)
 		}
 	}
-	err := workBook.Save(outfile)
+	err = workBook.Save(outfile)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		os.Exit(EXCEL_SAVE_ERROR)
 	}
+
+	return true
 }
 
 // the main entry function
@@ -515,7 +598,9 @@ func main() {
 	// this way we can just iterate over the slice (and maybe later
 	// add an option for a specified list of files)
 	if parmFileMask != "" {
-		fmt.Println("Found -filemask parameter, running in bulk mode")
+		if !parmSilent {
+			fmt.Println("Found filemask parameter, running in bulk mode")
+		}
 		fileList = getInputFiles(parmFileMask)
 	} else {
 		fileList = getInputFiles(parmInFile)
@@ -524,7 +609,12 @@ func main() {
 	// iterate over list of files to process and convert them
 	for _, infile := range fileList {
 		outfile := buildOutputName(infile)
-		fmt.Println("Converting", infile, "=>", outfile)
-		convertFile(infile, outfile)
+		if !parmSilent {
+			fmt.Println("Converting", infile, "=>", outfile)
+		}
+		ok := convertFile(infile, outfile)
+		if !ok {
+			fmt.Println(fmt.Sprintf("Could not convert input file %s", infile))
+		}
 	}
 }

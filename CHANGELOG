@@ -22,7 +22,7 @@
             Added better version of ParseFloat to allow scientific number notation
 
 2018-06-21 0.3.1
-            Added -filemask option to allow bulk processing
+            Added --filemask option to allow bulk processing
 
 2018-06-21 0.3.2
             Bugfix that caused -outfile to be ignored in 0.3.1
@@ -31,3 +31,8 @@
 
 2018-06-29 0.3.3
             Bugfix for the -dateformat parameter (now works as intended)
+
+2018-11-23 0.4.0
+            Added option --append
+            Added option --headerline
+            Added updating file with more than one sheet
