@@ -25,22 +25,9 @@ You execute the program from the command prompt of your operating system.
 Ths most basic use case is `csv2xlsx -infile test.csv -outfile result.xlsx`, where you
 take an input CSV file in UTF-8 and write out the .xslx file under a new file name.
 
-To list all available options start `csv2xlsx` with the option `--help`.
+To list all available options, start `csv2xlsx` with the option `--help`.
 
-### Supported encodings
-
-    Codepage037      Codepage437      Codepage850      Codepage852      Codepage855      
-    Codepage858      Codepage860      Codepage862      Codepage863      Codepage865
-    Codepage866      Codepage1047     Codepage1140      
-    ISO8859_1        ISO8859_2        ISO8859_3        ISO8859_4        ISO8859_5
-    ISO8859_6        ISO8859_6E       ISO8859_6I       ISO8859_7        ISO8859_8
-    ISO8859_8E       ISO8859_8I       ISO8859_9        ISO8859_10       ISO8859_13
-    ISO8859_14       ISO8859_15       ISO8859_16      
-    Koi8r            Koi8u      
-    Macintosh        MacintoshCyrillic      
-    Windows874       Windows1250      Windows1251      Windows1252      Windows1253      
-    Windows1254      Windows1255      Windows1256      Windows1257      Windows1258      
-
+To list all supported encodings, execute `csv2xlsx` with the option `--listencodings`
 
 ### Source
 
@@ -49,6 +36,6 @@ of people looking for such a tool, I decided to make it publicly available. I am
 I am sure there are much better, more Go-idiomatic ways to achieve this functionality. If you have feedback on how to improve
 the code or want to contribute, please do not hesitate to do so. I'd really like to improve my GO skills and learn things.
 As my spare time for coding is limited to some hours around midnight a week, so please have some patience with my answers.
-I am still amazed what you can accomplish within less than 500 lines of code in terms of making my admin part of life easier. :-)
+I am still amazed what you can accomplish within such a small tool in terms of making the admin part of my life easier. :-)
 
 

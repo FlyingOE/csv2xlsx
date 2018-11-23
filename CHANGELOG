@@ -36,3 +36,4 @@
             Added option --append
             Added option --headerline
             Added updating file with more than one sheet
+            Added option --listencodings
