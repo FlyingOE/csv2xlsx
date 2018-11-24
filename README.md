@@ -7,7 +7,7 @@ This programm has been created due to an internal requirement for a Bash shell s
 the web I found out that even in 2017 there is no simple, binary executable that does not need any
 runtime, virtual machine or whatever. All you need is a compiler for the Go programming language.
 If you do not want to compile the source and you decide to trust me (no warranty whatsoever, see the
-license below), you may download the binary.
+[LICENSE](./LICENSE) file), you may download the binary.
 
 Here are the SHA-256 checksums for the binaries:
 
