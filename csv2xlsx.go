@@ -336,6 +336,16 @@ func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnu
 	case "formula":
 		// colstring =<formula>
 		cell.SetFormula(colString[1:])
+	case "percent":
+		// thanks to Felipe Augusto da Silva for the improvement to use "percent"
+		floatVal, err := ParseFloat(colString)
+		if err != nil {
+			fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid number, value: %s", rownum, colnum, colString))
+			success = false
+		} else {
+			cell.SetStyle(rightAligned)
+			cell.SetFloatWithFormat(floatVal, "0.00%")
+		}
 	default:
 		cell.SetValue(colString)
 	}

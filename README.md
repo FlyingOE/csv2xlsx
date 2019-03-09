@@ -11,11 +11,11 @@ If you do not want to compile the source and you decide to trust me (no warranty
 
 Here are the SHA-256 checksums for the binaries:
 
-    63793d7f4ed54050611237c69f0030bd6df3d20804f4307cea8a532d5b63fcda  csv2xlsx_386.exe
-    a10ae55fe039f781f0b002da5db48b81928947ce24dcff73e95a43ac99c458d0  csv2xlsx_amd64.exe
-    2e6d5181c3b7ffaefc6d14e8dd6dd273af7b9b41bad91bbde23c40aba2334c06  csv2xlsx_linux_386
-    415e66ca0fcc602fb4dbd9eda070826b5c1cc38979685ddd72373be8f29001ff  csv2xlsx_linux_amd64
-    812142075e9bf187a8a6581911ba565cfde600e59c26f3dcae2e2d021ff05550  csv2xlsx_osx
+	c0e1fe8195de7a144ea08973f6f4000a38cb7eae26c922b321828adcac6ed19e  csv2xlsx_386.exe
+	0200f788d431e25d5610031ec63421b9d2f5f0fd2da26860bb6505362f71ace9  csv2xlsx_amd64.exe
+	2e2b219ad56ee28d8c43f3efaec1d95385cbcab9b3d67a0db64271045a6624aa  csv2xlsx_linux_386
+	9afc7eb3909e76a27d7b6fb82cc4d1b420c4f4140291f3396277522e7781334e  csv2xlsx_linux_amd64
+	8b15fd767949a3ca457e503670e6fc89dc263bf3e7af0e15201b8c2b529cbde2  csv2xlsx_osx
 
 
 ### Usage
