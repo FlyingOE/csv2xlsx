@@ -9,14 +9,13 @@ runtime, virtual machine or whatever. All you need is a compiler for the Go prog
 If you do not want to compile the source and you decide to trust me (no warranty whatsoever, see the
 [LICENSE](./LICENSE) file), you may download the binary.
 
-Here are the SHA-256 checksums for the binaries:
+Here are the SHA-256 checksums for the latest binaries:
 
-	bd05f824315c104964307cd6b8526f8b6d2b256f53faa55f4fee24fb39896c16  csv2xlsx_386.exe
-	7eec305c198bd3a10bc0647ae9614d51e1b01e906100a65ba3fbbdd5566e8ff3  csv2xlsx_amd64.exe
-	d46e16487cdc4334055390921b1994387e49c33e8e9556828b5a942373fcc480  csv2xlsx_linux_386
-	361a78d2650556c14669460ab0c656c0a7dba949ebf2846be37d2ddd719c0964  csv2xlsx_linux_amd64
-	186706ac7860f16be50363b41043489a8b838bd909bb9981ff5e0fb84baac091  csv2xlsx_osx
-
+eabdc8bfc9c23ad1e04e4a6576da5c80456f16ac3c870283a5571e09f8831826  csv2xlsx_386.exe
+69dc4821dd4db4465a84f74fe592f145ba7574466290f60f803c24e1724161ed  csv2xlsx_amd64.exe
+0de1192da0a1c217e018586a07aae4991e1c481d76e47e7d77b84958c21019bd  csv2xlsx_linux_386
+0c2fa046995b2757998a8057c06f91c9c201e427246054faf2a4612d137ac889  csv2xlsx_linux_amd64
+3e4178237567295d9c8f14577ad6733b722e87f4f5b7f90cf7bb73124a2f8fb1  csv2xlsx_osx
 
 ### Usage
 

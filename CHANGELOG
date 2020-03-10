@@ -37,3 +37,10 @@
             Added option --headerline
             Added updating file with more than one sheet
             Added option --listencodings
+
+2020-03-10 0.5
+            Column type "format" now working
+
+2020-03-10 0.5.1
+            Finally integrated the merge request from allmywatts
+            to check for empty content first and then set colType

@@ -283,11 +283,6 @@ func setRangeInformation(rowCount, colCount int) {
 // it outputs an error message and ignores the value
 func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnum int) bool {
 	success := true
-	// only convert to formula if the user specified --autoformula,
-	// otherwise use the defined type from column range -- for lazy people :-)
-	if parmAutoFormula && []rune(colString)[0] == '=' {
-		colType = "formula"
-	}
 	// check for content to process and
 	// process the "Ignore Warnings On Empty Cells" flag
 	if colString == "" {
@@ -295,6 +290,11 @@ func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnu
 			fmt.Println(fmt.Sprintf("Warning: Cell (%d, %d) is empty.", rownum, colnum))
 		}
 		return true
+	}
+	// only convert to formula if the user specified --autoformula,
+	// otherwise use the defined type from column range -- for lazy people :-)
+	if parmAutoFormula && strings.HasPrefix(colString, "=") {
+		colType = "formula"
 	}
 	// special treatment of "format" column type
 	fmtstring := ""
