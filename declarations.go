@@ -41,6 +41,7 @@ var (
 	parmOverwriteOutFile bool
 	parmListEncoders     bool
 	parmStartRow         int
+	parmNaNValue         string
 )
 
 // Possible bailouts

@@ -148,6 +148,7 @@ func parseCommandLine() {
 	flag.BoolVar(&parmAppendToSheet, "append", false, "append data rows to specified sheet instead of overwriting sheet")
 	flag.BoolVar(&parmListEncoders, "listencodings", false, "display a list of supported encodings and exit")
 	flag.IntVar(&parmStartRow, "startrow", 1, "start at row N in CSV file (this value is 1-based!)")
+	flag.StringVar(&parmNaNValue, "nanvalue", "", "value to be used for failed number conversions or missing numbers")
 	flag.Parse()
 
 	t, err := strconv.Unquote(`"` + tmpStr + `"`)
@@ -198,7 +199,7 @@ func parseCommandLine() {
 		fmt.Println(`
         Column ranges are a comma-separated list of numbers (e.g. 1,4,8,16), intervals (e.g. 0-4,18-32) or a combination.
         Each comma group can take a type specifiers for the column,
-        one of "text", "number", "integer", "currency", date", "standard" or "formula"
+        one of "text", "number", "integer", "currency", date", "standard", "percent" or "formula"
         separated from numbers with a colon (e.g. 0:text,3-16:number,17:date)
 		`)
 		os.Exit(SHOW_USAGE)
@@ -295,15 +296,40 @@ func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnu
 		}
 		return true
 	}
+	// special treatment of "format" column type
+	fmtstring := ""
+	if strings.HasPrefix(colType, "format") {
+		parts := strings.Split(colType, "=")
+		if len(parts) > 1 {
+			colType = parts[0]
+			fmtstring = parts[1]
+		}
+	}
 	// type dependent write
+	//fmt.Println("==>", colType)
 	switch colType {
+	case "format":
+		floatVal, err := ParseFloat(colString)
+		if err != nil {
+			fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid number, value: %s", rownum, colnum, colString))
+			success = false
+		} else {
+			cell.SetStyle(rightAligned)
+			cell.SetFloatWithFormat(floatVal, fmtstring)
+			// cell.SetFloatWithFormat(floatVal, fmtstring)
+		}
 	case "text":
 		cell.SetString(colString)
 	case "number", "currency":
 		floatVal, err := ParseFloat(colString)
 		if err != nil {
-			fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid number, value: %s", rownum, colnum, colString))
-			success = false
+			if parmNaNValue != "" {
+				cell.SetString(parmNaNValue)
+				success = true
+			} else {
+				fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid number, value: %s", rownum, colnum, colString))
+				success = false
+			}
 		} else {
 			cell.SetStyle(rightAligned)
 			if colType == "currency" {
