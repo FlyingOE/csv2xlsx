@@ -457,7 +457,11 @@ func buildOutputName(infile string) string {
 func openOrCreateFile(filename string) (*xlsx.File, error) {
 	var err error
 	var f *xlsx.File
-	if _, err = os.Stat(filename); os.IsNotExist(err) {
+	_, err = os.Stat(filename)
+	// we want a new file if there no existing file OR
+	// if there is an existing file, but we want to overwrite it,
+	// this was nasty bug
+	if os.IsNotExist(err) || parmOverwrite {
 		f = xlsx.NewFile()
 		err = nil
 	} else {
@@ -530,7 +534,6 @@ func convertFile(infile, outfile string) bool {
 		fmt.Println(err)
 		os.Exit(EXCEL_SAVE_ERROR)
 	}
-
 	return true
 }
 

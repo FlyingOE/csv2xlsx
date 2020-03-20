@@ -48,3 +48,6 @@
 2020-03-20 0.6
             Fixed a style usage bug that ignored font setting
             Usage message now complete again
+
+2020-03-21 0.6.1
+            Fixed a nasty bug handling file overwrite incorrectly
