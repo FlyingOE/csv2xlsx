@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	versionInfo          string = "0.4.0 (2081-11-23)"
+	versionInfo          string = "0.6.0 (2020-03-20)"
 	parmCols             string
 	parmRows             string
 	parmSheet            string
@@ -34,11 +34,10 @@ var (
 	workBook             *xlsx.File
 	workSheet            *xlsx.Sheet
 	rightAligned         *xlsx.Style
-	buildTimestamp       string
+	leftAligned          *xlsx.Style
 	tmpStr               string
 	parmHeaderLabels     []string
 	parmAppendToSheet    bool
-	parmOverwriteOutFile bool
 	parmListEncoders     bool
 	parmStartRow         int
 	parmNaNValue         string
@@ -46,17 +45,17 @@ var (
 
 // Possible bailouts
 const (
-	SUCCESS             = 0
+	//SUCCESS             = 0
 	SHOW_USAGE          = 1
 	INVALID_RANGE       = 2
 	INVALID_COLSEP      = 3
 	INPUTFILE_NOT_FOUND = 4
-	INPUTFILE_EMPTY     = 5
-	OPEN_CREATE_ERROR   = 6
-	READ_ERROR          = 7
+	//INPUTFILE_EMPTY     = 5
+	//OPEN_CREATE_ERROR   = 6
+	//READ_ERROR          = 7
 	WRITE_ERROR         = 8
-	ROW_WRITE_ERROR     = 9
-	NO_OVERWRITE        = 10
+	//ROW_WRITE_ERROR     = 9
+	//NO_OVERWRITE        = 10
 	OUTPUTDIR_NOT_FOUND = 11
 	EXCEL_SAVE_ERROR    = 12
 	INVALID_ARGUMENTS   = 13

@@ -44,3 +44,7 @@
 2020-03-10 0.5.1
             Finally integrated the merge request from allmywatts
             to check for empty content first and then set colType
+
+2020-03-20 0.6
+            Fixed a style usage bug that ignored font setting
+            Usage message now complete again

@@ -120,36 +120,49 @@ func parseRangeString(rangeStr string) map[int]string {
 // The function exits the program, if the input file does not exist
 func parseCommandLine() {
 	var headerString = ""
-	flag.StringVar(&parmInFile, "infile", "", "full pathname of input file (CSV file)")
-	flag.StringVar(&parmOutFile, "outfile", "", "full pathname of output file (.xlsx file)")
-	flag.StringVar(&parmFileMask, "filemask", "", "file mask for bulk processing (overwrites -infile/-outfile)")
-	flag.StringVar(&parmOutDir, "outdir", "", "target directory for the .xlsx file (not to be used with outfile)")
-	flag.StringVar(&parmDateFormat, "dateformat", "2006-01-02", "format for CSV date cells (default YYYY-MM-DD)")
-	flag.StringVar(&parmExcelDateFormat, "exceldateformat", "", "Excel format for date cells (default as in Excel)")
-	flag.StringVar(&parmCols, "columns", "", "column range to use (see below)")
-	flag.StringVar(&parmRows, "rows", "", "list of line numbers to use (1,2,8 or 1,3-14,28)")
-	flag.StringVar(&parmSheet, "sheet", "fromCSV", "tab name of the Excel sheet")
-	flag.StringVar(&tmpStr, "colsep", "|", "column separator (default '|') ")
-	flag.StringVar(&parmEncoding, "encoding", "utf-8", "character encoding")
-	flag.StringVar(&parmFontName, "fontname", "Arial", "set the font name to use")
-	flag.StringVar(&headerString, "headerlabels", "", "comma-separated list of header labels (enclose in quotes to be safe)")
-	flag.IntVar(&parmFontSize, "fontsize", 12, "set the default font size to use")
-	flag.IntVar(&parmHeaderLines, "headerlines", 1, "set the number of header lines (use 0 for no header)")
-	flag.BoolVar(&parmNoHeader, "noheader", false, "DEPRECATED (use headerlines) no header, only data lines")
-	flag.BoolVar(&parmAbortOnError, "abortonerror", false, "abort program on first invalid cell data type")
-	flag.BoolVar(&parmSilent, "silent", false, "do not display progress messages")
-	flag.BoolVar(&parmAutoFormula, "autoformula", false, "automatically format string starting with = as formulae")
-	flag.BoolVar(&parmHelp, "help", false, "display usage information")
-	flag.BoolVar(&parmHelp, "h", false, "display usage information")
-	flag.BoolVar(&parmHelp, "?", false, "display usage information")
-	flag.BoolVar(&parmShowVersion, "version", false, "display version information")
-	flag.BoolVar(&parmIgnoreEmpty, "ignoreempty", true, "do not display warnings for empty cells")
-	flag.BoolVar(&parmOverwrite, "overwrite", false, "overwrite existing output file (default false)")
-	flag.BoolVar(&parmAppendToSheet, "append", false, "append data rows to specified sheet instead of overwriting sheet")
-	flag.BoolVar(&parmListEncoders, "listencodings", false, "display a list of supported encodings and exit")
-	flag.IntVar(&parmStartRow, "startrow", 1, "start at row N in CSV file (this value is 1-based!)")
-	flag.StringVar(&parmNaNValue, "nanvalue", "", "value to be used for failed number conversions or missing numbers")
-	flag.Parse()
+	cmdlineFlags := flag.NewFlagSet(os.Args[0], flag.PanicOnError)
+	cmdlineFlags.StringVar(&parmInFile, "infile", "", "full pathname of input file (CSV file)")
+	cmdlineFlags.StringVar(&parmOutFile, "outfile", "", "full pathname of output file (.xlsx file)")
+	cmdlineFlags.StringVar(&parmFileMask, "filemask", "", "file mask for bulk processing (overwrites -infile/-outfile)")
+	cmdlineFlags.StringVar(&parmOutDir, "outdir", "", "target directory for the .xlsx file (not to be used with outfile)")
+	cmdlineFlags.StringVar(&parmDateFormat, "dateformat", "2006-01-02", "format for CSV date cells (default YYYY-MM-DD)")
+	cmdlineFlags.StringVar(&parmExcelDateFormat, "exceldateformat", "", "Excel format for date cells (default as in Excel)")
+	cmdlineFlags.StringVar(&parmCols, "columns", "", "column range to use (see below)")
+	cmdlineFlags.StringVar(&parmRows, "rows", "", "list of line numbers to use (1,2,8 or 1,3-14,28)")
+	cmdlineFlags.StringVar(&parmSheet, "sheet", "fromCSV", "tab name of the Excel sheet")
+	cmdlineFlags.StringVar(&tmpStr, "colsep", "|", "column separator (default '|') ")
+	cmdlineFlags.StringVar(&parmEncoding, "encoding", "utf-8", "character encoding")
+	cmdlineFlags.StringVar(&parmFontName, "fontname", "Arial", "set the font name to use")
+	cmdlineFlags.StringVar(&headerString, "headerlabels", "", "comma-separated list of header labels (enclose in quotes to be safe)")
+	cmdlineFlags.IntVar(&parmFontSize, "fontsize", 12, "set the default font size to use")
+	cmdlineFlags.IntVar(&parmHeaderLines, "headerlines", 1, "set the number of header lines (use 0 for no header)")
+	cmdlineFlags.BoolVar(&parmNoHeader, "noheader", false, "DEPRECATED (use headerlines) no header, only data lines")
+	cmdlineFlags.BoolVar(&parmAbortOnError, "abortonerror", false, "abort program on first invalid cell data type")
+	cmdlineFlags.BoolVar(&parmSilent, "silent", false, "do not display progress messages")
+	cmdlineFlags.BoolVar(&parmAutoFormula, "autoformula", false, "automatically format string starting with = as formulae")
+	cmdlineFlags.BoolVar(&parmHelp, "help", false, "display usage information")
+	cmdlineFlags.BoolVar(&parmHelp, "h", false, "display usage information")
+	cmdlineFlags.BoolVar(&parmHelp, "?", false, "display usage information")
+	cmdlineFlags.BoolVar(&parmShowVersion, "version", false, "display version information")
+	cmdlineFlags.BoolVar(&parmIgnoreEmpty, "ignoreempty", true, "do not display warnings for empty cells")
+	cmdlineFlags.BoolVar(&parmOverwrite, "overwrite", false, "overwrite existing output file (default false)")
+	cmdlineFlags.BoolVar(&parmAppendToSheet, "append", false, "append data rows to specified sheet instead of overwriting sheet")
+	cmdlineFlags.BoolVar(&parmListEncoders, "listencodings", false, "display a list of supported encodings and exit")
+	cmdlineFlags.IntVar(&parmStartRow, "startrow", 1, "start at row N in CSV file (this value is 1-based!)")
+	cmdlineFlags.StringVar(&parmNaNValue, "nanvalue", "", "value to be used for failed number conversions or missing numbers")
+	err := cmdlineFlags.Parse(os.Args[1:])
+
+	if parmHelp {
+		fmt.Printf("You are running version %s of %s\n\n", versionInfo, os.Args[0])
+		cmdlineFlags.Usage()
+		fmt.Println(`
+        Column ranges are a comma-separated list of numbers (e.g. 1,4,8,16), intervals (e.g. 0-4,18-32) or a combination.
+        Each comma group can have type specifier for the columns, separated with a colon (e.g. 0:text,3-16:number,17:date)
+        Type is one of: text|number|interger|currency|date|standard|percent|formula|format
+		Type "format" may be used together with a format string: format="FMTSTR", e.g. 2:format="0000.0"
+		`)
+		os.Exit(SHOW_USAGE)
+	}
 
 	t, err := strconv.Unquote(`"` + tmpStr + `"`)
 	if err != nil {
@@ -168,7 +181,9 @@ func parseCommandLine() {
 		"DD", "02",
 		"HH", "15",
 		"MI", "04",
-		"SS", "04")
+		"SS", "05",
+		"ZN", "-7000",
+		"ZC", "-07:00")
 
 	// Replace all pairs.
 	parmDateFormat = r.Replace(parmDateFormat)
@@ -182,26 +197,8 @@ func parseCommandLine() {
 		}
 	}
 
-	// Version, Usage, List encodings and stuff...
-	if parmShowVersion {
-		fmt.Println("Version", versionInfo)
-		os.Exit(SHOW_USAGE)
-	}
-
 	if parmListEncoders {
 		listEncoders()
-		os.Exit(SHOW_USAGE)
-	}
-
-	if parmHelp {
-		fmt.Printf("You are running version %s of %s\n\n", versionInfo, filepath.Base(os.Args[0]))
-		flag.Usage()
-		fmt.Println(`
-        Column ranges are a comma-separated list of numbers (e.g. 1,4,8,16), intervals (e.g. 0-4,18-32) or a combination.
-        Each comma group can take a type specifiers for the column,
-        one of "text", "number", "integer", "currency", date", "standard", "percent" or "formula"
-        separated from numbers with a colon (e.g. 0:text,3-16:number,17:date)
-		`)
 		os.Exit(SHOW_USAGE)
 	}
 
@@ -231,7 +228,6 @@ func loadInputFile(filename string) (rows [][]string, err error) {
 
 	// open input file
 	f, err := os.Open(filename)
-	defer f.Close()
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Error opening input file %s", filename))
 	}
@@ -256,7 +252,17 @@ func loadInputFile(filename string) (rows [][]string, err error) {
 	r.LazyQuotes = true
 	rows, err = r.ReadAll()
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Error reading CSV file %s", filename))
+		msg := fmt.Sprintf("Error reading CSV file %s", filename)
+		closeErr := f.Close()
+		if closeErr != nil {
+			msg = fmt.Sprintf("Error closing file %s", filename) + msg
+		}
+		return nil, errors.New(msg)
+	}
+	closeErr := f.Close()
+	if closeErr != nil {
+		msg := fmt.Sprintf("Error closing file %s", filename)
+		return nil, errors.New(msg)
 	}
 
 	return rows, nil
@@ -283,6 +289,7 @@ func setRangeInformation(rowCount, colCount int) {
 // it outputs an error message and ignores the value
 func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnum int) bool {
 	success := true
+	theStyle := leftAligned // let's assume left-aligned
 	// check for content to process and
 	// process the "Ignore Warnings On Empty Cells" flag
 	if colString == "" {
@@ -314,7 +321,7 @@ func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnu
 			fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid number, value: %s", rownum, colnum, colString))
 			success = false
 		} else {
-			cell.SetStyle(rightAligned)
+			theStyle = rightAligned
 			cell.SetFloatWithFormat(floatVal, fmtstring)
 			// cell.SetFloatWithFormat(floatVal, fmtstring)
 		}
@@ -331,11 +338,11 @@ func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnu
 				success = false
 			}
 		} else {
-			cell.SetStyle(rightAligned)
+			theStyle = rightAligned
 			if colType == "currency" {
 				cell.SetFloatWithFormat(floatVal, "#,##0.00;[red](#,##0.00)")
 			} else {
-				cell.SetFloat(floatVal)
+				cell.SetFloatWithFormat(floatVal, "0#.###")
 			}
 		}
 	case "integer":
@@ -344,7 +351,7 @@ func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnu
 			fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid integer, value: %s", rownum, colnum, colString))
 			success = false
 		} else {
-			cell.SetStyle(rightAligned)
+			theStyle = rightAligned
 			cell.SetInt64(intVal)
 			cell.NumFmt = "#0"
 		}
@@ -369,12 +376,17 @@ func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnu
 			fmt.Println(fmt.Sprintf("Cell (%d,%d) is not a valid number, value: %s", rownum, colnum, colString))
 			success = false
 		} else {
-			cell.SetStyle(rightAligned)
+			theStyle = rightAligned
 			cell.SetFloatWithFormat(floatVal, "0.00%")
 		}
 	default:
 		cell.SetValue(colString)
+		_, err := ParseFloat(colString)
+		if err == nil {
+			theStyle = rightAligned
+		}
 	}
+	cell.SetStyle(theStyle)
 	return success
 }
 
@@ -397,9 +409,7 @@ func processDataColumns(excelRow *xlsx.Row, rownum int, csvLine []string) {
 				} else {
 					cell.SetString(csvLine[colnum])
 				}
-				if colType == "number" || colType == "currency" {
-					cell.SetStyle(rightAligned)
-				}
+				cell.SetStyle(leftAligned)
 			} else {
 				// if the user wanted drama (--abortonerror), exit on first error
 				ok := writeCellContents(cell, csvLine[colnum], colType, rownum, colnum)
@@ -466,8 +476,8 @@ func getWorkSheet(sheetName string, workBook *xlsx.File, appendSheet bool) *xlsx
 		sh, _ = workBook.AddSheet(sheetName)
 	} else {
 		if !appendSheet {
-			// clear the sheets's contents
-			sh.Rows = []*xlsx.Row{}
+			// make a new sheet
+			sh, _ = xlsx.NewSheet(sheetName)
 		}
 	}
 	return sh
@@ -493,6 +503,12 @@ func convertFile(infile, outfile string) bool {
 	xlsx.SetDefaultFont(parmFontSize, parmFontName)
 	rightAligned = &xlsx.Style{}
 	rightAligned.Alignment = xlsx.Alignment{Horizontal: "right"}
+	rightAligned.Font.Name = parmFontName
+	rightAligned.Font.Size = parmFontSize
+	leftAligned = &xlsx.Style{}
+	leftAligned.Alignment = xlsx.Alignment{Horizontal: "left"}
+	leftAligned.Font.Name = parmFontName
+	leftAligned.Font.Size = parmFontSize
 	workBook, err = openOrCreateFile(outfile)
 	if err != nil {
 		fmt.Println(err)
