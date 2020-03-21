@@ -1,6 +1,10 @@
 
 # Usage information
 
+## Tutorial
+
+Please see the `tutorial` folder.
+
 ## List of command line options
 
       -?	display usage information
@@ -62,5 +66,5 @@
     
         Column ranges are a comma-separated list of numbers (e.g. 1,4,8,16), intervals (e.g. 0-4,18-32) or a combination.
         Each comma group can have type specifier for the columns, separated with a colon (e.g. 0:text,3-16:number,17:date)
-        Type is one of: text|number|interger|currency|date|standard|percent|formula|format
+        Type is one of: text|number|integer|currency|date|standard|percent|formula|format
 		Type "format" may be used together with a format string: format="FMTSTR", e.g. 2:format="0000.0"

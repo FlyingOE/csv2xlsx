@@ -120,7 +120,7 @@ func parseRangeString(rangeStr string) map[int]string {
 // The function exits the program, if the input file does not exist
 func parseCommandLine() {
 	var headerString = ""
-	cmdlineFlags := flag.NewFlagSet(os.Args[0], flag.PanicOnError)
+	cmdlineFlags := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	cmdlineFlags.StringVar(&parmInFile, "infile", "", "full pathname of input file (CSV file)")
 	cmdlineFlags.StringVar(&parmOutFile, "outfile", "", "full pathname of output file (.xlsx file)")
 	cmdlineFlags.StringVar(&parmFileMask, "filemask", "", "file mask for bulk processing (overwrites -infile/-outfile)")
@@ -138,7 +138,7 @@ func parseCommandLine() {
 	cmdlineFlags.IntVar(&parmHeaderLines, "headerlines", 1, "set the number of header lines (use 0 for no header)")
 	cmdlineFlags.BoolVar(&parmNoHeader, "noheader", false, "DEPRECATED (use headerlines) no header, only data lines")
 	cmdlineFlags.BoolVar(&parmAbortOnError, "abortonerror", false, "abort program on first invalid cell data type")
-	cmdlineFlags.BoolVar(&parmSilent, "silent", false, "do not display progress messages")
+	cmdlineFlags.BoolVar(&parmSilent, "silent", true, "do not display progress messages")
 	cmdlineFlags.BoolVar(&parmAutoFormula, "autoformula", false, "automatically format string starting with = as formulae")
 	cmdlineFlags.BoolVar(&parmHelp, "help", false, "display usage information")
 	cmdlineFlags.BoolVar(&parmHelp, "h", false, "display usage information")
@@ -152,13 +152,21 @@ func parseCommandLine() {
 	cmdlineFlags.StringVar(&parmNaNValue, "nanvalue", "", "value to be used for failed number conversions or missing numbers")
 	err := cmdlineFlags.Parse(os.Args[1:])
 
+	if err != nil || !cmdlineFlags.Parsed() {
+		fmt.Println("")
+		fmt.Println("Could not parse the command line, invalid option or value.")
+		fmt.Println("Error:", err)
+		fmt.Println("")
+		os.Exit(INVALID_ARGUMENTS)
+	}
+
 	if parmHelp {
 		fmt.Printf("You are running version %s of %s\n\n", versionInfo, os.Args[0])
 		cmdlineFlags.Usage()
 		fmt.Println(`
         Column ranges are a comma-separated list of numbers (e.g. 1,4,8,16), intervals (e.g. 0-4,18-32) or a combination.
         Each comma group can have type specifier for the columns, separated with a colon (e.g. 0:text,3-16:number,17:date)
-        Type is one of: text|number|interger|currency|date|standard|percent|formula|format
+        Type is one of: text|number|integer|currency|date|standard|percent|formula|format
 		Type "format" may be used together with a format string: format="FMTSTR", e.g. 2:format="0000.0"
 		`)
 		os.Exit(SHOW_USAGE)
