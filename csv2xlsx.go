@@ -350,7 +350,12 @@ func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnu
 			if colType == "currency" {
 				cell.SetFloatWithFormat(floatVal, "#,##0.00;[red](#,##0.00)")
 			} else {
-				cell.SetFloatWithFormat(floatVal, "0#.###")
+				// if it's an int, don't use precision
+				if floatVal == math.Trunc(floatVal) {
+					cell.SetInt64(int64(floatVal))
+				} else {
+					cell.SetFloatWithFormat(floatVal, "0.###")
+				}
 			}
 		}
 	case "integer":

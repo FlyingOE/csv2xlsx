@@ -56,3 +56,8 @@
             Improved error message on invalid arguments
             Typos corrected
             Tutorial added (in the `tutorial` folder)
+
+2020-04-02 0.6.3
+            Bugfix release, number format hat a leading zero
+            even if not needed. Fixed and ints will be formatted
+            as int (no prec)
