@@ -62,7 +62,7 @@
             even if not needed. Fixed and ints will be formatted
             as int (no prec)
 
-2020-04-03 0.6.3
+2020-04-03 0.6.4
             Using cell.SetInt() does not create right-alignment
             as should be for integer cells, have to use
             cell.SetFloatWithFormat() and a "#" format mask ...
