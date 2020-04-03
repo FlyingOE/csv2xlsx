@@ -352,7 +352,7 @@ func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnu
 			} else {
 				// if it's an int, don't use precision
 				if floatVal == math.Trunc(floatVal) {
-					cell.SetInt64(int64(floatVal))
+					cell.SetFloatWithFormat(floatVal, "#")
 				} else {
 					cell.SetFloatWithFormat(floatVal, "0.###")
 				}

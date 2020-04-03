@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	versionInfo          string = "0.6.3 (2020-04-02)"
+	versionInfo          string = "0.6.4 (2020-04-03)"
 	parmCols             string
 	parmRows             string
 	parmSheet            string
