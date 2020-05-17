@@ -67,3 +67,7 @@
             as should be for integer cells, have to use
             cell.SetFloatWithFormat() and a "#" format mask ...
 
+2020-05-17 0.6.5
+            Fixed the append logic to allow creation of xlsx files
+            with more than one worksheets
+            

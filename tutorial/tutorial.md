@@ -120,3 +120,21 @@ If you want to change the date format **within** Excel, use the option `-excelda
 * format => basically number, but allows you to specify a format using `=FORMATSTRING`
 
 
+### Appending data to existing files
+
+    ./csv2xlsx --infile test2.csv --outfile /tmp/out.xlsx --append 
+    
+This will append data to the excel file after the last row of the first sheet.
+You might want (if there is a header in the *input* data) not start from row 1, if you are appending data. 
+Use the `--startrow` parameter to specify the starting row (*start row numbers re 1-based! Makes it easier for non-developers.*), like so:
+
+    ./csv2xlsx --infile test2.csv --outfile /tmp/out.xlsx --append --startrow 2
+
+
+### Using multiple worksheets
+
+Using the `--sheet` parameter, you can specify the worksheet where the converted data will be written. 
+Using a combination of the `--append` and `--sheet` parameters, you can create an Excel file with more than one worksheet.
+The command below will append to the existing file, but write to a new sheet named *MyNewSheet*. 
+
+    ./csv2xlsx --infile test2.csv --outfile /tmp/out.xlsx --append --startrow 2 --sheet MyNewSheet
