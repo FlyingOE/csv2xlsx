@@ -1,15 +1,14 @@
 
-VERSION=`git describe --tags`
-BUILD=`date +%FT%T%z`
-
 # Setup the -ldflags option for go build here, interpolate the variable values
-LDFLAGS=-ldflags "-X main.versionInfo=${VERSION} -X main.buildTimestamp=${BUILD}"
+
+#LDFLAGS=-ldflags "-X main.versionInfo=0.6.6"
+LDFLAGS=
 
 # Builds the project
 build: ; go build ${LDFLAGS}
 
 # Installs our project: copies binaries
-install: ; go install ${LDFLAGS}
+install: ; go install 
 
 # cross compile
 platforms:

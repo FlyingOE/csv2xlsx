@@ -138,3 +138,10 @@ Using a combination of the `--append` and `--sheet` parameters, you can create a
 The command below will append to the existing file, but write to a new sheet named *MyNewSheet*. 
 
     ./csv2xlsx --infile test2.csv --outfile /tmp/out.xlsx --append --startrow 2 --sheet MyNewSheet
+
+## Sheet Names
+
+* The minimum sheet name length is 1 character. If the sheet name length is less an error is thrown.
+* The maximum sheet name length is 31 characters. If the sheet name length is exceeded an error is thrown.
+* These special characters are also not allowed: : \ / ? * [ ]
+

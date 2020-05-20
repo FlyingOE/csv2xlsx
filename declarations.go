@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	versionInfo          string = "0.6.4 (2020-04-03)"
+	versionInfo          string = "0.6.6 (2020-05-20)"
 	parmCols             string
 	parmRows             string
 	parmSheet            string
@@ -41,6 +41,7 @@ var (
 	parmListEncoders     bool
 	parmStartRow         int
 	parmNaNValue         string
+	parmDebug            bool
 )
 
 // Possible bailouts
@@ -50,7 +51,7 @@ const (
 	INVALID_RANGE       = 2
 	INVALID_COLSEP      = 3
 	INPUTFILE_NOT_FOUND = 4
-	//INPUTFILE_EMPTY     = 5
+	INVALID_SHEET_NAME  = 5
 	//OPEN_CREATE_ERROR   = 6
 	//READ_ERROR          = 7
 	WRITE_ERROR         = 8

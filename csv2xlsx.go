@@ -150,6 +150,7 @@ func parseCommandLine() {
 	cmdlineFlags.BoolVar(&parmListEncoders, "listencodings", false, "display a list of supported encodings and exit")
 	cmdlineFlags.IntVar(&parmStartRow, "startrow", 1, "start at row N in CSV file (this value is 1-based!)")
 	cmdlineFlags.StringVar(&parmNaNValue, "nanvalue", "", "value to be used for failed number conversions or missing numbers")
+	cmdlineFlags.BoolVar(&parmDebug, "debug", false, "display debug messages")
 	err := cmdlineFlags.Parse(os.Args[1:])
 
 	if err != nil || !cmdlineFlags.Parsed() {
@@ -180,7 +181,7 @@ func parseCommandLine() {
 	parmColSep, _ = utf8.DecodeRuneInString(t)
 
 	if parmShowVersion {
-		fmt.Println("Version ", versionInfo)
+		fmt.Println("Version", versionInfo)
 		os.Exit(SHOW_USAGE)
 	}
 
@@ -408,7 +409,7 @@ func writeCellContents(cell *xlsx.Cell, colString, colType string, rownum, colnu
 // that should be processed (is in column range, which means it is a key in the colRangeParsed map.
 // if the abortOnError option is set, the function exits the program on the first data type error.
 func processDataColumns(excelRow *xlsx.Row, rownum int, csvLine []string) {
-	if !parmSilent {
+	if parmDebug {
 		fmt.Println(fmt.Sprintf("Processing csvLine %d (%d cols)", rownum, len(csvLine)))
 	}
 	for colnum := 0; colnum < len(csvLine); colnum++ {
@@ -486,16 +487,19 @@ func openOrCreateFile(filename string) (*xlsx.File, error) {
 
 // getWorkSheet retrieves the specified sheet from the workbook
 // if the sheet does not exist, it is appended to the file.
-// Returns a pointer to the sheet
+// Returns a pointer to the sheet or nil in case of error
 func getWorkSheet(sheetName string, workBook *xlsx.File, appendSheet bool) *xlsx.Sheet {
 	var sh *xlsx.Sheet
 	var ok bool
-	if sh, ok = workBook.Sheet[sheetName]; !ok {
-		sh, _ = workBook.AddSheet(sheetName)
-	} else {
-		if !appendSheet {
-			// make a new sheet
-			sh, _ = xlsx.NewSheet(sheetName)
+	var err error
+	sh, ok = workBook.Sheet[sheetName]
+	if !ok {
+		// sheet not found, try to append a sheet with that name
+		sh, err = workBook.AddSheet(sheetName)
+		if err != nil {
+			// could not add the sheet
+			fmt.Println(err)
+			sh = nil
 		}
 	}
 	return sh
@@ -533,6 +537,10 @@ func convertFile(infile, outfile string) bool {
 		return false
 	}
 	workSheet = getWorkSheet(parmSheet, workBook, parmAppendToSheet)
+	if workSheet == nil {
+		fmt.Printf("Could not add worksheet [%s], exiting.\n", parmSheet)
+		os.Exit(INVALID_SHEET_NAME)
+	}
 
 	// loop thru line and column ranges and process data cells
 	for rownum := 0; rownum < len(rows); rownum++ {

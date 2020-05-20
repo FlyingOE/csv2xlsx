@@ -70,4 +70,7 @@
 2020-05-17 0.6.5
             Fixed the append logic to allow creation of xlsx files
             with more than one worksheets
-            
+
+2020-05-20 0.6.6
+            Removed a debug message and included a check for invalid
+            sheet names. Using an invalid name will exit with error code 5.
