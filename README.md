@@ -30,6 +30,12 @@ To list all supported encodings, execute `csv2xlsx` with the option `--listencod
 
 There is no difference if you use one or two hyphens before an option (`-infile` is the same as `--infile`)
 
+#### Default column and row separators
+
+Please note that the **default column separator** is the pipe char (`|`) and the **default row separator** is the newline char (`\n`). 
+The tools came into existence to solve a problem for me, so this is the default you will have to live with or use the `--colsep` and `--rowsep` parameters. ;-)
+
+
 ### Source
 
 This tool fulfills a special requirement and I will extend its functionality, if need arises. As I found out there are lots 
