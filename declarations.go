@@ -6,42 +6,42 @@ import (
 )
 
 var (
-	versionInfo          string = "0.6.6 (2020-05-20)"
-	parmCols             string
-	parmRows             string
-	parmSheet            string
-	parmInFile           string
-	parmOutFile          string
-	parmOutDir           string
-	parmFileMask         string
-	parmEncoding         string
-	parmHeaderLines      int
-	parmFontSize         int
-	parmFontName         string
-	parmColSep           rune
-	parmDateFormat       string
-	parmExcelDateFormat  string
-	parmNoHeader         bool
-	parmSilent           bool
-	parmHelp             bool
-	parmAbortOnError     bool
-	parmShowVersion      bool
-	parmAutoFormula      bool
-	parmIgnoreEmpty      bool
-	parmOverwrite        bool
-	rowRangeParsed       map[int]string
-	colRangeParsed       map[int]string
-	workBook             *xlsx.File
-	workSheet            *xlsx.Sheet
-	rightAligned         *xlsx.Style
-	leftAligned          *xlsx.Style
-	tmpStr               string
-	parmHeaderLabels     []string
-	parmAppendToSheet    bool
-	parmListEncoders     bool
-	parmStartRow         int
-	parmNaNValue         string
-	parmDebug            bool
+	versionInfo         string = "0.6.6 (2020-05-20)"
+	parmCols            string
+	parmRows            string
+	parmSheet           string
+	parmInFile          string
+	parmOutFile         string
+	parmOutDir          string
+	parmFileMask        string
+	parmEncoding        string
+	parmHeaderLines     int
+	parmFontSize        float64
+	parmFontName        string
+	parmColSep          rune
+	parmDateFormat      string
+	parmExcelDateFormat string
+	parmNoHeader        bool
+	parmSilent          bool
+	parmHelp            bool
+	parmAbortOnError    bool
+	parmShowVersion     bool
+	parmAutoFormula     bool
+	parmIgnoreEmpty     bool
+	parmOverwrite       bool
+	rowRangeParsed      map[int]string
+	colRangeParsed      map[int]string
+	workBook            *xlsx.File
+	workSheet           *xlsx.Sheet
+	rightAligned        *xlsx.Style
+	leftAligned         *xlsx.Style
+	tmpStr              string
+	parmHeaderLabels    []string
+	parmAppendToSheet   bool
+	parmListEncoders    bool
+	parmStartRow        int
+	parmNaNValue        string
+	parmDebug           bool
 )
 
 // Possible bailouts
@@ -54,7 +54,7 @@ const (
 	INVALID_SHEET_NAME  = 5
 	//OPEN_CREATE_ERROR   = 6
 	//READ_ERROR          = 7
-	WRITE_ERROR         = 8
+	WRITE_ERROR = 8
 	//ROW_WRITE_ERROR     = 9
 	//NO_OVERWRITE        = 10
 	OUTPUTDIR_NOT_FOUND = 11

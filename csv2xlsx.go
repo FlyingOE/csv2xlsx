@@ -134,7 +134,7 @@ func parseCommandLine() {
 	cmdlineFlags.StringVar(&parmEncoding, "encoding", "utf-8", "character encoding")
 	cmdlineFlags.StringVar(&parmFontName, "fontname", "Arial", "set the font name to use")
 	cmdlineFlags.StringVar(&headerString, "headerlabels", "", "comma-separated list of header labels (enclose in quotes to be safe)")
-	cmdlineFlags.IntVar(&parmFontSize, "fontsize", 12, "set the default font size to use")
+	cmdlineFlags.Float64Var(&parmFontSize, "fontsize", 12, "set the default font size to use")
 	cmdlineFlags.IntVar(&parmHeaderLines, "headerlines", 1, "set the number of header lines (use 0 for no header)")
 	cmdlineFlags.BoolVar(&parmNoHeader, "noheader", false, "DEPRECATED (use headerlines) no header, only data lines")
 	cmdlineFlags.BoolVar(&parmAbortOnError, "abortonerror", false, "abort program on first invalid cell data type")
@@ -281,7 +281,7 @@ func loadInputFile(filename string) (rows [][]string, err error) {
 // for lines and columns. of course we could leave this out by improving the parser function
 // at parseRangeString to allow something like line 34- (instead of 34-999). It's on the list ...
 func setRangeInformation(rowCount, colCount int) {
-	start := parmStartRow-1
+	start := parmStartRow - 1
 	// now we can set the default ranges for lines and columns
 	if parmRows == "" {
 		parmRows = fmt.Sprintf("%d-%d", start, rowCount)
