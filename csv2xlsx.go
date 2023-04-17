@@ -22,7 +22,10 @@ import (
 // listEncoders is a helper function to display the list
 // of supported encodings on standard output
 func listEncoders() {
-	names := make([]string, 0, len(encoders))
+	names := make([]string, 0, len(charmaps) + len(encoders))
+	for name := range charmaps {
+		names = append(names, name)
+	}
 	for name := range encoders {
 		names = append(names, name)
 	}
@@ -134,7 +137,8 @@ func parseCommandLine() {
 	cmdlineFlags.StringVar(&parmEncoding, "encoding", "utf-8", "character encoding")
 	cmdlineFlags.StringVar(&parmFontName, "fontname", "Arial", "set the font name to use")
 	cmdlineFlags.StringVar(&headerString, "headerlabels", "", "comma-separated list of header labels (enclose in quotes to be safe)")
-	cmdlineFlags.Float64Var(&parmFontSize, "fontsize", 12, "set the default font size to use")
+	//cmdlineFlags.Float64Var(&parmFontSize, "fontsize", 12, "set the default font size to use")
+	cmdlineFlags.IntVar(&parmFontSize, "fontsize", 12, "set the default font size to use")
 	cmdlineFlags.IntVar(&parmHeaderLines, "headerlines", 1, "set the number of header lines (use 0 for no header)")
 	cmdlineFlags.BoolVar(&parmNoHeader, "noheader", false, "DEPRECATED (use headerlines) no header, only data lines")
 	cmdlineFlags.BoolVar(&parmAbortOnError, "abortonerror", false, "abort program on first invalid cell data type")
@@ -246,7 +250,9 @@ func loadInputFile(filename string) (rows [][]string, err error) {
 	if encname == "UTF8" || encname == "UTF-8" {
 		rdr = bufio.NewReader(f)
 	} else {
-		if enc, ok := encoders[encname]; ok {
+		if enc, ok := charmaps[encname]; ok {
+			rdr = enc.NewDecoder().Reader(f)
+		} else if enc, ok := encoders[encname]; ok {
 			rdr = enc.NewDecoder().Reader(f)
 		} else {
 			fmt.Println(fmt.Sprintf("Specified encoding \"%s\" not found, defaulting to UTF-8\n", parmEncoding))

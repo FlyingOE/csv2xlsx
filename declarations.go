@@ -2,11 +2,14 @@ package main
 
 import (
 	"github.com/tealeg/xlsx"
+	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
 var (
-	versionInfo         string = "0.6.6 (2020-05-20)"
+	//versionInfo         string = "0.6.6 (2020-05-20)"
+	versionInfo         string = "0.6.6~capitaledge (2023-04-17)"
 	parmCols            string
 	parmRows            string
 	parmSheet           string
@@ -16,7 +19,8 @@ var (
 	parmFileMask        string
 	parmEncoding        string
 	parmHeaderLines     int
-	parmFontSize        float64
+	//parmFontSize        float64
+	parmFontSize        int
 	parmFontName        string
 	parmColSep          rune
 	parmDateFormat      string
@@ -62,7 +66,7 @@ const (
 	INVALID_ARGUMENTS   = 13
 )
 
-var encoders = map[string]*charmap.Charmap{
+var charmaps = map[string]*charmap.Charmap{
 	"CODEPAGE037":       charmap.CodePage037,
 	"CODEPAGE437":       charmap.CodePage437,
 	"CODEPAGE850":       charmap.CodePage850,
@@ -104,4 +108,10 @@ var encoders = map[string]*charmap.Charmap{
 	"WINDOWS1256":       charmap.Windows1256,
 	"WINDOWS1257":       charmap.Windows1257,
 	"WINDOWS1258":       charmap.Windows1258,
+}
+
+var encoders = map[string]encoding.Encoding{
+	"GB18030":           simplifiedchinese.GB18030,
+	"GBK":               simplifiedchinese.GBK,
+	"GB2312":            simplifiedchinese.HZGB2312,
 }

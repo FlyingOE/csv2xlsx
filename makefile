@@ -16,7 +16,8 @@ platforms:
 	GOOS=windows GOARCH=amd64 go build ${LDFLAGS} -o csv2xlsx_amd64.exe
 	GOOS=linux GOARCH=386 go build ${LDFLAGS} -o csv2xlsx_linux_386
 	GOOS=linux GOARCH=amd64 go build ${LDFLAGS} -o csv2xlsx_linux_amd64
-	go build ${LDFLAGS} -o csv2xlsx_osx
+	#go build ${LDFLAGS} -o csv2xlsx_osx
+	GOOS=darwin GOARCH=amd64 go build ${LDFLAGS} -o csv2xlsx_osx
 
 
 # Cleans our project: deletes binaries
